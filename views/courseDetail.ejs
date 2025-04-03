@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= course.title %></title>
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+    <div class="course-details-container">
+        <h1><%= course.title %></h1>
+        <p><%= course.description %></p>
+
+        <h3>Lessons</h3>
+        <ul>
+            <% course.subheadings.forEach(subheading => { %>
+                <li><a href="/course/<%= course._id %>/lesson/<%= subheading._id %>"><%= subheading.title %></a></li>
+            <% }) %>
+        </ul>
+    </div>
+</body>
+</html>

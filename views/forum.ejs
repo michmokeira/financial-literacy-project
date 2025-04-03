@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum</title>
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+    <div class="forum-container">
+        <h1>Forum</h1>
+        <div class="forum-posts">
+            <% posts.forEach(post => { %>
+                <div class="forum-post">
+                    <h3><%= post.title %></h3>
+                    <p><%= post.content %></p>
+                    <a href="/forum/post/<%= post._id %>">View Post</a>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</body>
+</html>

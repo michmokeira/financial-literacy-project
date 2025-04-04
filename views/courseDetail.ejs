@@ -1,22 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= course.title %></title>
-    <link rel="stylesheet" href="/css/auth.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Details</title>
+  <link rel="stylesheet" href="/styles/courseDetail.css"> <!-- Link to the CSS file -->
 </head>
 <body>
-    <div class="course-details-container">
-        <h1><%= course.title %></h1>
-        <p><%= course.description %></p>
 
-        <h3>Lessons</h3>
-        <ul>
-            <% course.subheadings.forEach(subheading => { %>
-                <li><a href="/course/<%= course._id %>/lesson/<%= subheading._id %>"><%= subheading.title %></a></li>
+  <div class="course-container">
+    <h1 class="course-title"><%= course.name %></h1>
+    <p class="course-description"><%= course.description %></p>
+
+    <!-- Enroll Button -->
+    <% if (!enrolledCourse) { %>
+      <form action="/enroll/<%= course._id %>" method="POST">
+        <button type="submit" class="btn btn-primary">Enroll in Course</button>
+      </form>
+    <% } else { %>
+      <p>You are already enrolled in this course.</p>
+    <% } %>
+
+    <h2 class="module-title">Modules</h2>
+    <ul class="module-list">
+      <% course.modules.forEach(module => { %>
+        <li class="module-item">
+          <h3><%= module.name %></h3>
+          <p><%= module.description %></p>
+
+          <!-- Display Subtopics -->
+          <ul class="subtopic-list">
+            <% module.subtopics.forEach(subtopic => { %>
+              <li class="subtopic-item">
+                <h4><%= subtopic.title %></h4>
+                <p><%= subtopic.content %></p>
+                <% if (enrolledCourse && enrolledCourse.completedSubtopics.includes(subtopic._id)) { %>
+                  <span class="badge badge-success">Completed</span>
+                <% } else { %>
+                  <form action="/complete-subtopic/<%= subtopic._id %>" method="POST">
+                    <button type="submit" class="btn btn-secondary">Mark as Completed</button>
+                  </form>
+                <% } %>
+              </li>
             <% }) %>
-        </ul>
-    </div>
+          </ul>
+        </li>
+      <% }) %>
+    </ul>
+
+    <h2 class="quiz-title">Quizzes</h2>
+    <ul class="quiz-list">
+      <% course.modules.forEach(module => { %>
+        <% module.quizzes.forEach(quiz => { %>
+          <li class="quiz-item">
+            <h4><%= quiz.name %></h4>
+            <p><%= quiz.description %></p>
+            <% if (enrolledCourse && enrolledCourse.completedQuiz && enrolledCourse.completedQuiz.toString() === quiz._id.toString()) { %>
+              <span class="badge badge-success">Completed</span>
+            <% } else { %>
+              <form action="/complete-quiz/<%= quiz._id %>" method="POST">
+                <button type="submit" class="btn btn-warning">Complete Quiz</button>
+              </form>
+            <% } %>
+          </li>
+        <% }) %>
+      <% }) %>
+    </ul>
+
+  </div>
+
 </body>
 </html>

@@ -23,7 +23,7 @@ app.set("view engine", "ejs"); // Set EJS as the view engine
 
 //session middleware
 app.use(session({
-  secret: 'secretkey',// Secret key for signing the session ID cookie
+  secret: process.env.JWT_SECRET,// Secret key for signing the session ID cookie
   resave: false,// Do not save session if unmodified
   saveUninitialized: true,// Save uninitialized sessions
   cookie: {
@@ -54,11 +54,13 @@ mongoose.connect('mongodb://localhost:27017/financial_literacy_db')
 const authRoutes = require('./routes/authRoutes');// Import authentication routes
 const dashboardRoutes = require('./routes/dashboardRoutes');// Import dashboard routes
 const expertRoutes = require('./routes/expertRoutes');// Import expert routes
+const courseRoutes = require('./routes/courseRoutes'); //Import course routes
 
 // Use the imported routes
 app.use('/', authRoutes);// Use authentication routes for the root path
 app.use('/dashboard', dashboardRoutes);// Use dashboard routes for the "/dashboard" path
 app.use('/expert', expertRoutes);// Use expert routes for the "/expert" path
+app.use('/courses', courseRoutes);//Use course routes for the "/courses" path
 
 //default route
 app.get("/", (req, res) => {

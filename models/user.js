@@ -7,7 +7,13 @@ const UserSchema = new mongoose.Schema({
   password:{ type :String, required: true },
   role:{type: String, enum: ['learner', 'expert', 'admin'], default: 'learner'},
   completedCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],// Array of completed course IDs
-  enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],// Array of enrolled course IDs
+  enrolledCourses: [{
+    course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+    currentModule: { type: mongoose.Schema.Types.ObjectId, ref: 'Module' }, // Track current module
+    completedSubtopics: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subtopic' }], // Track completed subtopics
+    completedQuiz: { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' }, // Track completed quiz
+    progress: { type: Number, default: 0 } // Overall course progress (0-100)
+  }],
   badges: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Badge' }],// Array of badge IDs
   forumPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ForumPost' }],// Array of forum post IDs
   expertRequestStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },// Status of expert request

@@ -3,59 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <!-- Include Bootstrap & CSS -->
+    <title>Financial Literacy Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <h2>Dashboard</h2>
-        <ul>
-            <li><a href="#"><i class="fas fa-home"></i> Home</a></li>
-            <li><a href="#"><i class="fas fa-book"></i> My Courses</a></li>
-            <li><a href="#"><i class="fas fa-comments"></i> Forum</a></li>
-            <li><a href="#"><i class="fas fa-blog"></i> Blog</a></li>
-            <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <header>
-            <h1>Welcome, <%= user.username %>!</h1>
-        </header>
-
-        <section class="dashboard-overview">
-            <div class="card">
-                <h3>Your Enrolled Courses</h3>
-                <% if (enrolledCourses.length > 0) { %>
-                    <ul>
-                        <% enrolledCourses.forEach(course => { %>
-                            <li><%= course.title %> - <strong><%= course.progress %>% Complete</strong></li>
-                        <% }); %>
-                    </ul>
-                <% } else { %>
-                    <p>No courses enrolled yet.</p>
-                <% } %>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>FinLit</h2>
             </div>
+            <ul class="nav-links">
+                <li class="active"><a href="#"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#"><i class="fas fa-book"></i> My Courses</a></li>
+                <li><a href="#"><i class="fas fa-comments"></i> Forum</a></li>
+                <li><a href="#"><i class="fas fa-blog"></i> Blog</a></li>
+                <li><a href="/profile"><i class="fas fa-user"></i> Profile</a></li>
+            </ul>
+            <div class="nav-footer">
+                <a href="#"><i class="fas fa-gear"></i> Settings</a>
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </nav>
 
-            <div class="card">
-                <h3>Available Courses</h3>
-                <% availableCourses.forEach(course => { %>
-                    <div class="course-item">
-                        <h4><%= course.title %></h4>
-                        <button class="btn btn-primary">Enroll</button>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header with search and profile -->
+            <header class="header">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search for courses...">
+                </div>
+                <div class="user-profile">
+                    <div class="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
                     </div>
-                <% }); %>
-            </div>
-        </section>
-    </div>
-    
+                    <div class="profile-pic">
+                        <img src="https://via.placeholder.com/40" alt="Profile Picture">
+                    </div>
+                </div>
+            </header>
 
-    
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Welcome Section -->
+                <section class="welcome-section">
+                    <div class="welcome-text">
+                        <h1>Welcome, <%= user.username %>!</h1>
+                        <p>Continue your journey to financial freedom.</p>
+                    </div>
+                    <% if (user.enrolledCourses.length > 0) { %>
+                    <div class="progress-overview">
+                        <div class="progress-card">
+                            <div class="progress-info">
+                                <h3>Learning Progress</h3>
+                                <span><%= Math.round(user.enrolledCourses.reduce((sum, course) => sum + course.progress, 0) / user.enrolledCourses.length) %>%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: <%= Math.round(user.enrolledCourses.reduce((sum, course) => sum + course.progress, 0) / user.enrolledCourses.length) %>%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <% } else { %>
+                    <div class="progress-overview">
+                        <div class="progress-card">
+                            <div class="progress-info">
+                                <h3>Learning Progress</h3>
+                                <span>0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+                </section>
+
+                <!-- Enrolled Courses Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2>Your Enrolled Courses</h2>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <% if (user.enrolledCourses.length > 0) { %>
+                    <div class="courses-grid">
+                        <% user.enrolledCourses.slice(0, 2).forEach(course => { %>
+                        <div class="course-card">
+                            <div class="course-image">
+                                <img src="https://via.placeholder.com/300x160" alt="<%= course.title %>">
+                                <span class="progress-indicator" style="width: <%= course.progress %>%"></span>
+                            </div>
+                            <div class="course-details">
+                                <h3><%= course.title %></h3>
+                                <p><%= course.description || 'Learn more about this course' %></p>
+                                <div class="course-meta">
+                                    <span><i class="fas fa-clock"></i> <%= course.progress %>% Complete</span>
+                                    <a href="/courses/<%= course._id %>" class="continue-btn">Continue</a>
+                                </div>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                    <% } else { %>
+                    <div class="empty-state">
+                        <p>No courses enrolled yet. Browse our available courses below.</p>
+                    </div>
+                    <% } %>
+                </section>
+
+                <!-- Available Courses Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2>Available Courses</h2>
+                        <a href="/courses" class="view-all">View All Available Courses</a>
+                    </div>
+                    <div class="courses-grid">
+                        <% availableCourses.slice(0, 2).forEach(course => { %>
+                        <div class="course-card">
+                            <div class="course-image">
+                                <img src="https://via.placeholder.com/300x160" alt="<%= course.title %>">
+                                <% if (course.isPopular) { %>
+                                <span class="course-badge">Popular</span>
+                                <% } else if (course.isNew) { %>
+                                <span class="course-badge">New</span>
+                                <% } %>
+                            </div>
+                            <div class="course-details">
+                                <h3><%= course.title %></h3>
+                                <p><%= course.description %></p>
+                                <div class="course-meta">
+                                    <span><i class="fas fa-user"></i> <%= course.enrolledCount || 0 %> enrolled</span>
+                                    <a href="/courses/<%= course._id %>" class="enroll-btn">View Course</a>
+                                </div>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                </section>
+
+                <!-- Blog Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2>Latest From Our Blog</h2>
+                        <a href="/blog" class="view-all">View All Posts</a>
+                    </div>
+                    <div class="blog-grid">
+                        <div class="blog-card">
+                            <div class="blog-image">
+                                <img src="https://via.placeholder.com/380x200" alt="Market Trends">
+                            </div>
+                            <div class="blog-details">
+                                <div class="blog-meta">
+                                    <span><i class="fas fa-calendar"></i> April 2, 2025</span>
+                                    <span><i class="fas fa-comment"></i> 24 comments</span>
+                                </div>
+                                <h3>Understanding Market Trends in 2025</h3>
+                                <p>An analysis of current market conditions and forecasts for the remainder of the year.</p>
+                                <a href="/blog/market-trends" class="read-more">Read More</a>
+                            </div>
+                        </div>
+                        <div class="blog-card">
+                            <div class="blog-image">
+                                <img src="https://via.placeholder.com/380x200" alt="Crypto Investing">
+                            </div>
+                            <div class="blog-details">
+                                <div class="blog-meta">
+                                    <span><i class="fas fa-calendar"></i> March 28, 2025</span>
+                                    <span><i class="fas fa-comment"></i> 37 comments</span>
+                                </div>
+                                <h3>The Future of Cryptocurrency Investing</h3>
+                                <p>Exploring the potential and risks of digital assets in a balanced portfolio.</p>
+                                <a href="/blog/crypto-investing" class="read-more">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/dashboard.js"></script>
 </body>
 </html>

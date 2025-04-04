@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses List</title>
+  <link rel="stylesheet" href="/public/css/courselist.css"> 
+</head>
+
+<body>
+  <h1>Available Courses</h1>
+
+  <% if (courses && courses.length > 0) { %>
+    <ul>
+      <% courses.forEach(course => { %>
+        <li>
+          <a href="/courses/<%= course._id %>"><%= course.title %></a> 
+          - <%= course.description %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No courses available at the moment.</p>
+  <% } %>
+
+</body>
+</html>

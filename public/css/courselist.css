@@ -1,0 +1,65 @@
+/* Reset some default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body and general layout */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+/* Course list styling */
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover effect for courses */
+li:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Styling for course links */
+a {
+  color: #007BFF;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Styling for the empty state */
+p {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #777;
+  margin-top: 30px;
+}

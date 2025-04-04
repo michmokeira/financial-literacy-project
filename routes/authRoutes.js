@@ -94,6 +94,16 @@ router.post('/register', async (req, res) => {
         const newUser = await User.create({ username, email, password: hashedPassword });
 
         req.session.user = newUser; // Create session for the new user
+        console.log('User registered and session set:', req.session.user);
+
+        
+        req.session.save((err) =>{
+            if (err){
+                console.error('Session save error:',err);
+                req.flash('error','An error occured.Please try again.');
+                return res.redirect('/register');//redirect back to register page
+            }
+        })
 
         console.log('User loggedin and session set:', req.session.user);// Debugging log
 

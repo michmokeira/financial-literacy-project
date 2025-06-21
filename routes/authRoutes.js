@@ -5,6 +5,7 @@ const Course = require('../models/course');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { ensureAuthenticated } = require('../middleware/authMiddleware'); // Import authentication middleware
+const roleRedirect = require('../middleware/roleRedirectMiddleware'); // Import role redirect middleware
 
 
 // Render login page 
@@ -16,7 +17,7 @@ router.get('/login', (req, res) => {
 });
 
 // Handle login 
-router.post('/login', async (req, res) => {
+router.post('/login', roleRedirect, async (req, res) => {
     console.log('Received login request:', req.body); // Debugging log
 
     const { email, password } = req.body;
@@ -40,6 +41,7 @@ router.post('/login', async (req, res) => {
         // Set session for EJS users
         req.session.user = user;
         console.log('User logged in and session set:', req.session.user); // Debugging log
+        console.log('User role from database:', user.role); // Debugging user role
 
         // Save session before redirecting to ensure it's properly stored
         req.session.save(err => {
@@ -50,13 +52,24 @@ router.post('/login', async (req, res) => {
             }
 
             // Generate JWT for API use
-            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign(
+                { id: user._id }, 
+                process.env.JWT_SECRET,
+                { expiresIn: '1h' }
+            );
 
             // Check if request is from Postman or frontend
             if (req.headers['content-type'] === 'application/json') {
                 return res.json({ message: "Login successful", token });
             } else {
-                return res.redirect('/dashboard'); // Redirect to dashboard
+                // Redirect based on user role
+                if (user.role === 'admin') {
+                    return res.redirect('/admin/dashboard');
+                } else if (user.role === 'expert') {
+                    return res.redirect('/expert/dashboard');
+                } else {
+                    return res.redirect('/dashboard');
+                }
             }
         });
 
@@ -87,16 +100,15 @@ router.post('/register', async (req, res) => {
             return res.redirect('/register'); // Redirect back to register page
         }
 
-        // Hash password
-        const hashedPassword = bcrypt.hashSync(password, 10);
+        // Hash password. Deleted later to avoid double hashing sisnce it is already done in the user model
+        
 
         // Create new user
-        const newUser = await User.create({ username, email, password: hashedPassword });
+        const newUser = await User.create({ username, email, password });
 
         req.session.user = newUser; // Create session for the new user
         console.log('User registered and session set:', req.session.user);
 
-        
         req.session.save((err) =>{
             if (err){
                 console.error('Session save error:',err);
@@ -127,29 +139,5 @@ router.get('/logout', (req, res) => {
         res.redirect('/login'); // Redirect to login page after logging out
     });
 });
-
-
-// Dashboard Route (Protected)
-router.get('/dashboard', ensureAuthenticated, async (req, res) => {
-    try {
-        const user = await User.findById(req.session.user._id); // Fetch user from DB
-
-        const completedCourses = await Course.find({ _id: { $in: user.completedCourses } }); // Fetch completed courses
-
-        const availableCourses = await Course.find();// Fetch all available courses
-
-        res.render('dashboard',{
-            user,
-            enrolledCourses:user.enrolledCourses||[],
-            availableCourses: await Course.find({}), // Fetch all available courses 
-        }); // Pass user data to the dashboard view
-
-    } catch (error) {
-        console.error('Dashboard error:', error);
-        req.flash('error', 'An error occurred. Please try again.');
-        res.redirect('/login');
-    }
-});
-
 
 module.exports = router;

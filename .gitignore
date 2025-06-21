@@ -1,0 +1,21 @@
+# Environment variables - DO NOT UPLOAD TO GITHUB
+.env
+
+# Dependencies - These can be installed from package.json
+/node_modules
+
+# Exclusions based on your request
+/scripts/
+/routes/adminRoutes.js
+/views/admin/
+models/adminInvitation.js
+
+# Generated files
+public/css/output.css
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+
+# Misc
+.DS_Store 

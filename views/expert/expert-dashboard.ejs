@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expert Dashboard | FinLit</title>
+  <link href="/css/output.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+  <!-- Include Expert Sidebar -->
+  <%- include('../partials/expert-sidebar', { activePage: 'dashboard' }) %>
+  <!-- Include Header -->
+  <%- include('../partials/expert-header') %>
+
+  <!-- Main Content -->
+  <main class="pt-16 md:ml-64 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Welcome Banner -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg p-6 text-white mb-6">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold">Welcome, <%= user.username %>!</h2>
+            <p class="mt-1 opacity-90">Here's an overview of your expert activities and contributions.</p>
+          </div>
+          <div class="inline-flex items-center px-3 py-1.5 bg-blue-800 bg-opacity-30 rounded-lg text-white">
+            <i class="fas fa-certificate text-green-500 mr-2"></i>
+            <span>Expert since <%= new Date(user.expertSince || user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg border border-gray-200 p-4 flex items-center">
+          <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3 mr-4">
+            <i class="fas fa-blog text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Blog Articles</p>
+            <h3 class="text-xl font-semibold text-gray-900"><%= stats.blogCount || 0 %></h3>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-lg border border-gray-200 p-4 flex items-center">
+          <div class="flex-shrink-0 bg-green-100 rounded-lg p-3 mr-4">
+            <i class="fas fa-comments text-green-600 text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Forum Posts</p>
+            <h3 class="text-xl font-semibold text-gray-900"><%= stats.forumCount || 0 %></h3>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-lg border border-gray-200 p-4 flex items-center">
+          <div class="flex-shrink-0 bg-purple-100 rounded-lg p-3 mr-4">
+            <i class="fas fa-eye text-purple-600 text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Total Views</p>
+            <h3 class="text-xl font-semibold text-gray-900"><%= stats.totalViews || 0 %></h3>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-lg border border-gray-200 p-4 flex items-center">
+          <div class="flex-shrink-0 bg-red-100 rounded-lg p-3 mr-4">
+            <i class="fas fa-heart text-red-600 text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Total Likes</p>
+            <h3 class="text-xl font-semibold text-gray-900"><%= stats.totalLikes || 0 %></h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tabbed Content - Blogs and Forum Posts -->
+      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+        <div class="px-4 bg-gray-50 border-b border-gray-200">
+          <div class="flex -mb-px">
+            <button class="tab-button px-6 py-3 border-b-2 border-blue-600 text-blue-600 font-medium text-sm" data-tab="blogs">
+              My Blog Posts
+            </button>
+            <button class="tab-button px-6 py-3 border-b-2 border-transparent hover:text-gray-700 text-gray-500 font-medium text-sm" data-tab="forum">
+              My Forum Posts
+            </button>
+          </div>
+        </div>
+        
+        <!-- Tabs Content -->
+        <div class="tab-content" id="blogs-tab">
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-medium text-gray-900">Your Blog Posts</h3>
+              <a href="/blog/expert/create" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors gap-4">
+                <i class="fas fa-plus mr-1.5"></i> New Article
+              </a>
+            </div>
+            
+            <% if (blogs && blogs.length > 0) { %>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <% blogs.forEach(blog => { %>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm font-medium text-gray-900 truncate max-w-xs"><%= blog.title %></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <% if (blog.status === 'published') { %>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Published</span>
+                          <% } else { %>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Draft</span>
+                          <% } %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-500"><%= blog.category %></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-500"><%= new Date(blog.createdAt).toLocaleDateString() %></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <%= blog.viewCount || 0 %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div class="flex space-x-2">
+                            <a href="/expert/blog/edit/<%= blog._id %>" class="text-blue-600 hover:text-blue-900">
+                              <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="/blog/<%= blog._id %>" class="text-green-600 hover:text-green-900">
+                              <i class="fas fa-eye"></i>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+              <div class="flex justify-center mt-4 bg-gray-50 py-2">
+                <a href="/blog/expert?tab=timeline" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-4">
+                  View All Blog Posts <i class="fas fa-arrow-right ml-1.5"></i>
+                </a>
+              </div>
+            <% } else { %>
+              <div class="py-12 text-center">
+                <div class="mb-4 text-gray-400">
+                  <i class="fas fa-feather-alt text-4xl"></i>
+                </div>
+                <h4 class="text-lg font-medium text-gray-900 mb-2">No blog posts yet</h4>
+                <p class="text-sm text-gray-600 mb-4">Share your financial expertise by creating your first blog post</p>
+                <a href="/expert/blog/create" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                  <i class="fas fa-plus mr-1.5"></i> Create First Blog Post
+                </a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+        
+        <div class="tab-content hidden" id="forum-tab">
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-medium text-gray-900">Your Forum Posts</h3>
+              <a href="/expert/forum/create" class="inline-flex items-center px-6 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors gap-2">
+                <i class="fas fa-plus mr-1.5"></i> New Forum Post
+              </a>
+            </div>
+            
+            <% if (forumPosts && forumPosts.length > 0) { %>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comments</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Likes</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <% forumPosts.forEach(post => { %>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm font-medium text-gray-900 truncate max-w-xs"><%= post.title %></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-500"><%= post.category %></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="text-sm text-gray-500"><%= new Date(post.createdAt).toLocaleDateString() %></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <%= post.comments ? post.comments.length : 0 %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <%= post.likes ? post.likes.length : 0 %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div class="flex space-x-2">
+                            <a href="/expert/forum/edit/<%= post._id %>" class="text-blue-600 hover:text-blue-900">
+                              <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="/expert/forum/post/<%= post._id %>" class="text-green-600 hover:text-green-900">
+                              <i class="fas fa-eye"></i>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+              <div class="flex justify-center mt-4 bg-gray-50 py-2">
+                <a href="/expert/forum" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-4">
+                  View All Forum Posts <i class="fas fa-arrow-right ml-1.5"></i>
+                </a>
+              </div>
+            <% } else { %>
+              <div class="py-12 text-center">
+                <div class="mb-4 text-gray-400">
+                  <i class="fas fa-comments text-4xl"></i>
+                </div>
+                <h4 class="text-lg font-medium text-gray-900 mb-2">No forum posts yet</h4>
+                <p class="text-sm text-gray-600 mb-4">Start engaging with the community by creating your first forum post</p>
+                <a href="/expert/forum/create" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                  <i class="fas fa-plus mr-1.5"></i> Create First Forum Post
+                </a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Draft Articles -->
+          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+              <h3 class="font-medium text-gray-900">Draft Articles</h3>
+             </div>
+            
+            <div class="divide-y divide-gray-100">
+              <% if (draftPosts && draftPosts.length > 0) { %>
+                <% draftPosts.forEach(draft => { %>
+                  <div class="p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between pb-4 border-gray-200">
+                      <div>
+                        <h4 class="font-medium text-gray-900 mb-1"><%= draft.title %></h4>
+                        <p class="text-xs text-gray-500">Last edited <%= new Date(draft.updatedAt || draft.createdAt).toLocaleDateString() %></p>
+                        <p class="text-sm text-gray-600 mt-2 line-clamp-2"><%= draft.content ? draft.content.substring(0, 20) + '...' : 'No content yet' %></p>
+                      </div>
+                      <div class="flex space-x-2">
+                        <a href="/blog/expert/edit/<%= draft._id %>" class="inline-flex items-center px-2 py-2 bg-white border border-gray-300 text-gray-700 text-xs rounded-md hover:bg-gray-50 transition-colors gap-4">
+                          <i class="fas fa-edit mr-1.5"></i> Keep Editing
+                        </a>
+                      </div>
+                    </div>
+                   
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <div class="p-6 text-center">
+                  <div class="mb-3 text-gray-400">
+                    <i class="fas fa-pencil-alt text-3xl"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-900 mb-1">No draft articles</h4>
+                  <p class="text-sm text-gray-600 mb-3">Start creating content to share your financial expertise</p>
+                  <a href="/blog/expert/create" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-plus mr-1.5"></i> Create New Article
+                  </a>
+                </div>
+              <% } %>
+            </div>
+            
+            <% if (draftPosts && draftPosts.length > 0) { %>
+              <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                <a href="/blog/expert?tab=drafts" class="text-sm text-blue-600 hover:text-blue-800 flex items-center justify-center gap-4">
+                  View All Drafts <i class="fas fa-arrow-right ml-1.5"></i>
+                </a>
+              </div>
+            <% } %>
+          </div>
+          
+          <!-- Recent Forum Activity -->
+          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+              <h3 class="font-medium text-gray-900">Recent Forum Activity</h3>
+              <a href="/expert/forum" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
+            </div>
+            
+            <div class="divide-y divide-gray-100">
+              <% if (forumActivity && forumActivity.length > 0) { %>
+                <% forumActivity.forEach(activity => { %>
+                  <a href="/expert/forum/post/<%= activity._id %>" class="block p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 mt-1">
+                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100">
+                          <i class="fas fa-comment-alt text-blue-600"></i>
+                        </span>
+                      </div>
+                      
+                      <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-900 mb-1">
+                          <%= activity.title %>
+                        </p>
+                        <!-- Author info -->
+                        <div class="flex items-center gap-2 mt-1">
+                          <img src="<%= activity.author.profileImage || '/images/default-avatar.png' %>" alt="<%= activity.author.username %>" class="h-6 w-6 rounded-full">
+                          <span class="text-xs text-gray-600"><%= activity.author.username %></span>
+                        </div>
+                        <div class="text-xs text-gray-500 flex items-center">
+                          <span><%= new Date(activity.createdAt).toLocaleDateString() %></span>
+                          <span class="mx-1">•</span>
+                          <span><%= activity.category %></span>
+                          <% if (activity.comments && activity.comments.length > 0) { %>
+                            <span class="mx-1">•</span>
+                            <span><i class="fas fa-comment-dots mr-1"></i><%= activity.comments.length %></span>
+                          <% } %>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2 line-clamp-2"><%= activity.content ? activity.content.substring(0, 150) + '...' : '' %></p>
+                      </div>
+                    </div>
+                  </a>
+                <% }) %>
+              <% } else { %>
+                <div class="p-6 text-center">
+                  <div class="mb-3 text-gray-400">
+                    <i class="fas fa-comments text-3xl"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-900 mb-1">No forum activity yet</h4>
+                  <p class="text-sm text-gray-600 mb-3">Start engaging with the community by answering questions</p>
+                  <a href="/forum" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-comments mr-1.5"></i> Browse Forum
+                  </a>
+                </div>
+              <% } %>
+            </div>
+          </div>
+          
+          <!-- Blog Analytics -->
+          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <h3 class="font-medium text-gray-900">Content Performance</h3>
+            </div>
+            
+            <div class="p-6">
+              <% if (blogStats && blogStats.recentPosts && blogStats.recentPosts.length > 0) { %>
+                <div class="space-y-4">
+                  <% blogStats.recentPosts.forEach(post => { %>
+                    <div class="flex items-center">
+                      <div class="w-1/2 pr-4">
+                        <h4 class="text-sm font-medium text-gray-900 truncate"><%= post.title %></h4>
+                        <p class="text-xs text-gray-500"><%= new Date(post.publishedAt).toLocaleDateString() %></p>
+                      </div>
+                      <div class="w-1/2 flex items-center">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                          <div class="progress-bar bg-blue-600 h-2 rounded-full" data-width="<%= Math.min(post.views / 10, 100) %>"></div>
+                        </div>
+                        <span class="ml-2 text-xs text-gray-600"><%= post.views %> views</span>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <div class="text-center py-6">
+                  <p class="text-gray-500">No published articles yet to show analytics.</p>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="space-y-6">
+          <!-- Profile & Expertise -->
+          <div class="bg-white rounded-lg border border-gray-200 mb-6">
+            <div class="p-6 text-center">
+              <h3 class="text-xl font-semibold text-gray-900 mb-4">Your Profile</h3>
+              <div class="flex flex-col items-center gap-3">
+                <div class="flex items-center gap-3">
+                  <img src="<%= user.profileImage || '/images/default-profile.png' %>" alt="<%= user.name %>" class="h-10 w-10 rounded-full object-cover border border-gray-200">
+                  <h4 class="text-lg font-medium text-gray-900"><%= user.name %></h4>
+                </div>
+                <div>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <i class="fas fa-certificate mr-1 text-blue-500"></i> Verified Expert
+                  </span>
+                </div>
+                <div>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    <i class="fas fa-award mr-1 text-purple-500"></i> <%= user.badges ? user.badges.length : 0 %> Badges
+                  </span>
+                </div>
+                <div>
+                  <a href="/expert/profile" class="text-sm text-blue-600 hover:text-blue-800">
+                    Update Profile <i class="fas fa-arrow-right ml-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Activity -->
+          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <h3 class="font-medium text-gray-900">Recent Activity</h3>
+            </div>
+            
+            <div class="divide-y divide-gray-100">
+              <% if (recentActivity && recentActivity.length > 0) { %>
+                <% recentActivity.forEach(activity => { %>
+                  <div class="p-4">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 mt-1">
+                        <% if (activity.type === 'blog_post') { %>
+                          <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100">
+                            <i class="fas fa-feather text-blue-600"></i>
+                          </span>
+                        <% } else if (activity.type === 'forum_post') { %>
+                          <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-100">
+                            <i class="fas fa-comment-dots text-green-600"></i>
+                          </span>
+                        <% } %>
+                      </div>
+                      
+                      <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-900">
+                          <% if (activity.type === 'blog_post') { %>
+                            You published a blog post
+                          <% } else if (activity.type === 'forum_post') { %>
+                            You created a forum post
+                          <% } %>
+                        </p>
+                        <p class="text-xs text-gray-500 mb-1"><%= new Date(activity.date).toLocaleString() %></p>
+                        <p class="text-sm font-medium text-gray-900"><%= activity.title %></p>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              <% } else { %>
+                <div class="p-6 text-center">
+                  <p class="text-gray-500">No recent activity to display.</p>
+                </div>
+              <% } %>
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+              <h3 class="font-medium text-gray-900">Quick Actions</h3>
+            </div>
+            
+            <div class="p-4">
+              <div class="grid grid-cols-2 gap-3">
+                <a href="/blog/expert/create" class="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-pen-fancy text-blue-600 text-xl mb-2"></i>
+                  <span class="text-sm text-gray-900">Write Article</span>
+                </a>
+                <a href="/expert/forum/create" class="flex flex-col items-center p-4 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-comment-medical text-green-600 text-xl mb-2"></i>
+                  <span class="text-sm text-gray-900">New Forum Post</span>
+                </a>
+                <a href="/forum?filter=unanswered" class="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-question-circle text-purple-600 text-xl mb-2"></i>
+                  <span class="text-sm text-gray-900">Answer Questions</span>
+                </a>
+                <a href="/expert/analytics" class="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <i class="fas fa-chart-line text-red-600 text-xl mb-2"></i>
+                  <span class="text-sm text-gray-900">View Analytics</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <style>
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-clamp: 2; /* Standard property for compatibility */
+    }
+  </style>
+  
+  <script>
+    // Toggle mobile sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebar = document.querySelector('nav');
+      
+      if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+          sidebar.classList.toggle('-translate-x-full');
+        });
+      }
+      
+      // Apply width to progress bars
+      document.querySelectorAll('.progress-bar').forEach(bar => {
+        const width = bar.getAttribute('data-width');
+        bar.style.width = width + '%';
+      });
+      
+      // Tab switching functionality
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Get the tab to show
+          const tabToShow = button.dataset.tab;
+          
+          // Update active tab button styling
+          tabButtons.forEach(btn => {
+            if (btn.dataset.tab === tabToShow) {
+              btn.classList.add('border-blue-600', 'text-blue-600');
+              btn.classList.remove('border-transparent', 'text-gray-500');
+            } else {
+              btn.classList.remove('border-blue-600', 'text-blue-600');
+              btn.classList.add('border-transparent', 'text-gray-500');
+            }
+          });
+          
+          // Show/hide appropriate tab content
+          tabContents.forEach(content => {
+            if (content.id === `${tabToShow}-tab`) {
+              content.classList.remove('hidden');
+            } else {
+              content.classList.add('hidden');
+            }
+          });
+        });
+      });
+    });
+  </script>
+  <%- include('../partials/expert-footer') %>
+</body>
+</html>

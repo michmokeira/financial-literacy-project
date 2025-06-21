@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= blog.title %> | FinLit</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+  <!-- Learner Sidebar -->
+  <%- include('../../partials/expert-sidebar', { activePage: 'blog' }) %>
+  
+  <!-- Expert Header -->
+  <%- include('../../partials/expert-header') %>
+
+  <main class="pt-12 md:ml-64 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Back button -->
+      <div class="mb-6">
+        <a href="/blog/expert" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
+          <i class="fas fa-arrow-left mr-2"></i> Back to blog posts
+        </a>
+      </div>
+      
+      <!-- Blog content using shared partial -->
+      <%- include('../../partials/blog-content', { blog, user, isLiked }) %>
+    </div>
+  </main>
+</body>
+</html>
+ 

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Blog Posts | FinLit</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+  <!-- Expert Sidebar -->
+   <%- include('../../partials/expert-sidebar', { activePage: 'blog' }) %>
+  <!-- Header -->
+  <%- include('../../partials/expert-header') %>
+
+  <main class="pt-16 md:ml-64 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Page header -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg p-6 text-white mb-6">
+            <h2 class="text-2xl font-bold">Manage Blog Posts</h2>
+            <p class="mt-1 opacity-90">Share your financial expertise with our community</p>
+          <div class="mt-4">
+            <a href="/blog/expert/create" class="inline-block items-center px-4 py-2 bg-white text-blue-600 rounded-md font-medium hover:bg-gray-100 transition-colors">
+            <i class="fas fa-plus mr-2"></i> Create
+            </a>  
+        </div>
+      </div>
+
+      <!-- Blog post tabs -->
+      <div class="bg-white rounded-lg border border-gray-200 mb-6">
+        <div class="border-b border-gray-200">
+          <nav class="flex -mb-px">
+            <a href="/blog/expert?tab=timeline" class="<%= tab === 'timeline' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm">
+              Timeline
+            </a>
+            <a href="/blog/expert?tab=published" class="<%= !tab || tab === 'published' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm">
+              Published
+            </a>
+            <a href="/blog/expert?tab=drafts" class="<%= tab === 'drafts' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' %> whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm">
+              Drafts
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Filter, Search, and Sort Section -->
+      <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <form action="/blog/expert" method="GET" class="space-y-4">
+          <!-- Preserve tab parameter -->
+          <input type="hidden" name="tab" value="<%= tab %>">
+          
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Search -->
+            <div class="md:col-span-2">
+              <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <div class="relative">
+                <input type="text" 
+                       name="search" 
+                       id="search" 
+                       value="<%= query.search || '' %>"
+                       placeholder="Search by title or content..." 
+                       class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <i class="fas fa-search text-gray-400"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div>
+              <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <select name="category" 
+                      id="category" 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">All Categories</option>
+                <option value="Savings" <%= query.category === 'Savings' ? 'selected' : '' %>>Savings</option>
+                <option value="Investing" <%= query.category === 'Investing' ? 'selected' : '' %>>Investing</option>
+                <option value="Budgeting" <%= query.category === 'Budgeting' ? 'selected' : '' %>>Budgeting</option>
+                <option value="Debt Management" <%= query.category === 'Debt Management' ? 'selected' : '' %>>Debt Management</option>
+                <option value="Retirement" <%= query.category === 'Retirement' ? 'selected' : '' %>>Retirement</option>
+                <option value="Financial Planning" <%= query.category === 'Financial Planning' ? 'selected' : '' %>>Financial Planning</option>
+                <option value="Personal Finance" <%= query.category === 'Personal Finance' ? 'selected' : '' %>>Personal Finance</option>
+                <option value="Credit" <%= query.category === 'Credit' ? 'selected' : '' %>>Credit</option>
+                <option value="Taxes" <%= query.category === 'Taxes' ? 'selected' : '' %>>Taxes</option>
+                <option value="Insurance" <%= query.category === 'Insurance' ? 'selected' : '' %>>Insurance</option>
+                <option value="Real Estate" <%= query.category === 'Real Estate' ? 'selected' : '' %>>Real Estate</option>
+              </select>
+            </div>
+
+            <!-- Sort -->
+            <div>
+              <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+              <select name="sort" 
+                      id="sort" 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="newest" <%= query.sort === 'newest' ? 'selected' : '' %>>Newest First</option>
+                <option value="oldest" <%= query.sort === 'oldest' ? 'selected' : '' %>>Oldest First</option>
+                <option value="most_views" <%= query.sort === 'most_views' ? 'selected' : '' %>>Most Views</option>
+                <option value="most_likes" <%= query.sort === 'most_likes' ? 'selected' : '' %>>Most Likes</option>
+                <option value="most_comments" <%= query.sort === 'most_comments' ? 'selected' : '' %>>Most Comments</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Filter Actions -->
+          <div class="flex justify-between items-center">
+            <div class="flex gap-2">
+              <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                <i class="fas fa-filter mr-1.5"></i> Apply Filters
+              </button>
+              <a href="/blog/expert?tab=<%= tab %>" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors">
+                <i class="fas fa-times mr-1.5"></i> Clear Filters
+              </a>
+            </div>
+            <% if (query.search || query.category || query.sort) { %>
+              <div class="text-sm text-gray-600">
+                Showing filtered results
+              </div>
+            <% } %>
+          </div>
+        </form>
+      </div>
+
+      <% if (!tab || tab === 'published') { %>
+        <!-- Published posts grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <% publishedPosts && publishedPosts.forEach(post => { %>
+            <article class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-blue-300 transition-colors">
+              <!-- Post image if available -->
+              <% if (post.image) { %>
+                <div class="aspect-w-16 aspect-h-9">
+                  <img src="<%= post.image %>" alt="<%= post.title %>" class="w-full h-48 object-cover">
+                </div>
+              <% } else { %>
+                <div class="w-full h-48 bg-gray-100 flex items-center justify-center">
+                  <i class="fas fa-newspaper text-gray-400 text-4xl"></i>
+                </div>
+              <% } %>
+              
+              <div class="p-6">
+                <!-- Post title -->
+                <h2 class="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <%= post.title %>
+                </h2>
+                
+                <!-- Author info -->
+                <div class="flex items-center mb-3">
+                  <img src="<%= post.author.profileImage || '/images/default-profile.png' %>" 
+                       alt="<%= post.author.username %>" 
+                       class="h-6 w-6 rounded-full object-cover border border-gray-200 mr-2">
+                  <span class="text-sm text-gray-600">
+                    <%= post.author.username %>
+                  </span>
+                </div>
+
+                <!-- Category tag -->
+                <div class="mb-3">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <%= post.category %>
+                  </span>
+                </div>
+                
+                <!-- Date -->
+                <div class="mb-3">
+                  <span class="flex items-center text-sm text-gray-500">
+                    <i class="far fa-calendar-alt mr-1.5"></i>
+                    <%= new Date(post.publishedAt || post.createdAt).toLocaleDateString() %>
+                  </span>
+                </div>
+                
+                <!-- Post excerpt -->
+                <p class="text-gray-600 mb-4 line-clamp-3">
+                  <%= post.excerpt || (post.content && post.content.substring(0, 150) + '...') || 'No content preview available.' %>
+                </p>
+                
+                <!-- Stats group -->
+                <div class="flex items-center gap-3 text-sm text-gray-500 mb-4">
+                  <span class="flex items-center">
+                    <i class="far fa-eye mr-1"></i>
+                    <%= post.views || 0 %>
+                  </span>
+                  <span class="flex items-center">
+                    <i class="far fa-comment mr-1"></i>
+                    <%= post.comments ? post.comments.length : 0 %>
+                  </span>
+                  <span class="flex items-center">
+                    <i class="far fa-heart mr-1"></i>
+                    <%= post.likes ? post.likes.length : 0 %>
+                  </span>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="flex justify-between items-center">
+                  <% if (post.status === 'published') { %>
+                    <a href="/blog/expert/<%= post._id %>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      View Post <i class="fas fa-external-link-alt ml-1"></i>
+                    </a>
+                  <% } else { %>
+                    <a href="/blog/expert/preview/<%= post._id %>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      Preview
+                    </a>
+                  <% } %>
+                  <div class="flex gap-2">
+                    <a href="/blog/expert/edit/<%= post._id %>" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 transition-colors">
+                      <i class="fas fa-edit mr-1.5"></i> Edit
+                    </a>
+                    <form action="/blog/expert/delete/<%= post._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this post? This action cannot be undone.');">
+                      <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 text-sm rounded-md hover:bg-red-100 transition-colors">
+                        <i class="fas fa-trash mr-1.5"></i> Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </article>
+          <% }) %>
+          
+          <% if (!publishedPosts || publishedPosts.length === 0) { %>
+            <div class="lg:col-span-3 bg-white rounded-lg border border-gray-200 p-8 text-center">
+              <div class="max-w-md mx-auto">
+                <div class="mb-4 text-gray-400">
+                  <i class="fas fa-newspaper text-6xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No published posts yet</h3>
+                <p class="text-gray-600 mb-6">Start sharing your financial expertise with our community.</p>
+                <a href="/blog/expert/create" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  <i class="fas fa-plus mr-1.5"></i> Create Your First Post
+                </a>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } else if (tab === 'drafts') { %>
+        <!-- Drafts list -->
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <% if (draftPosts && draftPosts.length > 0) { %>
+            <div class="divide-y divide-gray-100">
+              <% draftPosts.forEach(draft => { %>
+                <div class="p-6 hover:bg-gray-50 transition-colors">
+                  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                      <h2 class="text-xl font-semibold text-gray-900 mb-1 truncate">
+                        <%= draft.title || 'Untitled Draft' %>
+                      </h2>
+                      <p class="text-sm text-gray-500 mb-3">
+                        Last edited: <%= new Date(draft.updatedAt || draft.createdAt).toLocaleString() %>
+                      </p>
+                      <p class="text-gray-600 line-clamp-2">
+                        <%= draft.excerpt || (draft.content && draft.content.substring(0, 150) + '...') || 'No content preview available.' %>
+                      </p>
+                    </div>
+                    <div class="flex gap-2 sm:flex-col md:flex-row">
+                      <a href="/blog/expert/edit/<%= draft._id %>" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-edit mr-1.5"></i> Continue Editing
+                      </a>
+                      <form action="/blog/expert/delete/<%= draft._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this draft? This action cannot be undone.');">
+                        <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 text-sm rounded-md hover:bg-red-100 transition-colors">
+                          <i class="fas fa-trash mr-1.5"></i> Delete
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="p-8 text-center">
+              <div class="max-w-md mx-auto">
+                <div class="mb-4 text-gray-400">
+                  <i class="fas fa-pencil-alt text-6xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No draft posts</h3>
+                <p class="text-gray-600 mb-6">Start writing a post and save it as a draft to work on later.</p>
+                <a href="/blog/expert/new" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  <i class="fas fa-plus mr-1.5"></i> Create New Draft
+                </a>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } else if (tab === 'timeline') { %>
+        <!-- Timeline posts grid - all published posts from all users -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <% timelinePosts && timelinePosts.forEach(post => { %>
+            <article class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-blue-300 transition-colors">
+              <!-- Post image if available -->
+              <% if (post.image) { %>
+                <div class="aspect-w-16 aspect-h-9">
+                  <img src="<%= post.image %>" alt="<%= post.title %>" class="w-full h-48 object-cover">
+                </div>
+              <% } else { %>
+                <div class="w-full h-48 bg-gray-100 flex items-center justify-center">
+                  <i class="fas fa-newspaper text-gray-400 text-4xl"></i>
+                </div>
+              <% } %>
+              
+              <div class="p-6">
+                <!-- Post title -->
+                <h2 class="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <%= post.title %>
+                </h2>
+                
+                <!-- Author info -->
+                <div class="flex items-center mb-3">
+                  <img src="<%= post.author.profileImage || '/images/default-profile.png' %>" 
+                       alt="<%= post.author.username %>" 
+                       class="h-6 w-6 rounded-full object-cover border border-gray-200 mr-2">
+                  <span class="text-sm text-gray-600">
+                    <%= post.author.username %>
+                  </span>
+                </div>
+
+                <!-- Category tag -->
+                <div class="mb-3">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <%= post.category %>
+                  </span>
+                </div>
+                
+                <!-- Date -->
+                <div class="mb-3">
+                  <span class="flex items-center text-sm text-gray-500">
+                    <i class="far fa-calendar-alt mr-1.5"></i>
+                    <%= new Date(post.publishedAt || post.createdAt).toLocaleDateString() %>
+                  </span>
+                </div>
+                
+                <!-- Post excerpt -->
+                <p class="text-gray-600 mb-4 line-clamp-3">
+                  <%= post.excerpt || (post.content && post.content.substring(0, 150) + '...') || 'No content preview available.' %>
+                </p>
+                
+                <!-- Stats group -->
+                <div class="flex items-center gap-3 text-sm text-gray-500 mb-4">
+                  <span class="flex items-center">
+                    <i class="far fa-eye mr-1"></i>
+                    <%= post.views || 0 %>
+                  </span>
+                  <span class="flex items-center">
+                    <i class="far fa-comment mr-1"></i>
+                    <%= post.comments ? post.comments.length : 0 %>
+                  </span>
+                  <span class="flex items-center">
+                    <i class="far fa-heart mr-1"></i>
+                    <%= post.likes ? post.likes.length : 0 %>
+                  </span>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="flex justify-between items-center">
+                  <a href="/blog/expert/<%= post._id %>" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    View Post <i class="fas fa-external-link-alt ml-1"></i>
+                  </a>
+                  <div class="flex gap-2">
+                    <a href="/blog/expert/edit/<%= post._id %>" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 transition-colors">
+                      <i class="fas fa-edit mr-1.5"></i> Edit
+                    </a>
+                    <form action="/blog/expert/delete/<%= post._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this post? This action cannot be undone.');">
+                      <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 text-sm rounded-md hover:bg-red-100 transition-colors">
+                        <i class="fas fa-trash mr-1.5"></i> Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </article>
+          <% }) %>
+          
+          <% if (!timelinePosts || timelinePosts.length === 0) { %>
+            <div class="lg:col-span-3 bg-white rounded-lg border border-gray-200 p-8 text-center">
+              <div class="max-w-md mx-auto">
+                <div class="mb-4 text-gray-400">
+                  <i class="fas fa-newspaper text-6xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No published posts yet</h3>
+                <p class="text-gray-600 mb-6">No blog posts have been published on the platform yet.</p>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } %>
+
+      <!-- Pagination -->
+      <% if ((tab === 'drafts' && draftPosts && draftPosts.length > 0 && totalDraftPages > 1) || 
+             (tab === 'timeline' && timelinePosts && timelinePosts.length > 0 && totalTimelinePages > 1) ||
+             (!tab || tab === 'published') && publishedPosts && publishedPosts.length > 0 && totalPages > 1) { %>
+        <div class="mt-8 flex justify-center">
+          <nav class="flex items-center gap-2">
+            <% 
+              let currentPageVar;
+              let totalPaginationPages;
+              
+              if (tab === 'drafts') {
+                currentPageVar = currentDraftPage;
+                totalPaginationPages = totalDraftPages;
+              } else if (tab === 'timeline') {
+                currentPageVar = currentTimelinePage;
+                totalPaginationPages = totalTimelinePages;
+              } else {
+                currentPageVar = currentPage;
+                totalPaginationPages = totalPages;
+              }
+            %>
+            
+            <% if (currentPageVar > 1) { %>
+              <a href="?<%= tab ? `tab=${tab}&` : '' %>page=<%= currentPageVar - 1 %>" class="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Previous
+              </a>
+            <% } %>
+            
+            <% for(let i = 1; i <= totalPaginationPages; i++) { %>
+              <a href="?<%= tab ? `tab=${tab}&` : '' %>page=<%= i %>" 
+                 class="px-3 py-2 border <%= currentPageVar === i ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50' %> rounded-md text-sm font-medium">
+                <%= i %>
+              </a>
+            <% } %>
+            
+            <% if (currentPageVar < totalPaginationPages) { %>
+              <a href="?<%= tab ? `tab=${tab}&` : '' %>page=<%= currentPageVar + 1 %>" class="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Next
+              </a>
+            <% } %>
+          </nav>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <style>
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-clamp: 2; /* Standard property for compatibility */
+    }
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-clamp: 3; /* Standard property for compatibility */
+    }
+  </style>
+
+  <script>
+    // Toggle mobile sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebar = document.querySelector('nav');
+      
+      if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+          sidebar.classList.toggle('-translate-x-full');
+        });
+      }
+    });
+  </script>
+
+  <%- include('../../partials/expert-footer') %>
+</body>
+</html>

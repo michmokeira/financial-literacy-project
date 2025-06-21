@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Forum Post | FinLit</title>
+  <link href="/css/output.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Include Quill.js for rich text editing -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+  <!-- Include Expert Sidebar -->
+  <%- include('../../partials/expert-sidebar', { activePage: 'forum' }) %>
+  <!-- Include Header -->
+  <%- include('../../partials/expert-header') %>
+
+  <!-- Main Content -->
+  <main class="pt-16 md:ml-64 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Page Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Edit Forum Post</h1>
+          <p class="mt-1 text-sm text-gray-600">Update your post to improve clarity or add new information</p>
+        </div>
+        <a href="/expert/forum/post/<%= post._id %>" class="inline-flex items-center justify-center px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
+          <i class="fas fa-arrow-left mr-1.5"></i> Back to Post
+        </a>
+      </div>
+      
+      <!-- Edit Post Form -->
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <form action="/expert/forum/edit/<%= post._id %>" method="POST" id="editPostForm">
+          <!-- Form Header -->
+          <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="font-medium text-gray-900">Edit Post Details</h2>
+            <p class="text-xs text-gray-500 mt-1">Last updated: <%= new Date(post.updatedAt || post.createdAt).toLocaleString() %></p>
+          </div>
+          
+          <div class="p-6 space-y-6">
+            <!-- Title Input -->
+            <div>
+              <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-500">*</span></label>
+              <input type="text" id="title" name="title" required 
+                class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" 
+                placeholder="Enter a descriptive title"
+                value="<%= post.title %>">
+              <p class="mt-1 text-xs text-gray-500">Be specific and clear about your topic (150 characters max)</p>
+            </div>
+            
+            <!-- Category Selection -->
+            <div>
+              <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-500">*</span></label>
+              <select id="category" name="category" required
+                class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                <option value="" disabled>Select a category</option>
+                <option value="investing" <%= post.category === 'investing' ? 'selected' : '' %>>Investing</option>
+                <option value="saving" <%= post.category === 'saving' ? 'selected' : '' %>>Saving</option>
+                <option value="budgeting" <%= post.category === 'budgeting' ? 'selected' : '' %>>Budgeting</option>
+                <option value="debt" <%= post.category === 'debt' ? 'selected' : '' %>>Debt Management</option>
+                <option value="retirement" <%= post.category === 'retirement' ? 'selected' : '' %>>Retirement Planning</option>
+                <option value="taxes" <%= post.category === 'taxes' ? 'selected' : '' %>>Taxes</option>
+                <option value="insurance" <%= post.category === 'insurance' ? 'selected' : '' %>>Insurance</option>
+                <option value="credit" <%= post.category === 'credit' ? 'selected' : '' %>>Credit & Credit Cards</option>
+                <option value="mortgage" <%= post.category === 'mortgage' ? 'selected' : '' %>>Mortgage & Real Estate</option>
+                <option value="cryptocurrency" <%= post.category === 'cryptocurrency' ? 'selected' : '' %>>Cryptocurrency</option>
+                <option value="stocks" <%= post.category === 'stocks' ? 'selected' : '' %>>Stocks & Trading</option>
+                <option value="other" <%= post.category === 'other' ? 'selected' : '' %>>Other</option>
+              </select>
+            </div>
+            
+            <!-- Tags Input -->
+            <div>
+              <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+              <input type="text" id="tags" name="tags" 
+                class="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" 
+                placeholder="e.g. investment, retirement, savings"
+                value="<%= post.tags ? post.tags.join(', ') : '' %>">
+              <p class="mt-1 text-xs text-gray-500">Separate tags with commas (maximum 5 tags)</p>
+            </div>
+            
+            <!-- Rich Text Editor -->
+            <div>
+              <label for="editor" class="block text-sm font-medium text-gray-700 mb-1">Content <span class="text-red-500">*</span></label>
+              <div id="editor" class="h-64 border border-gray-300 rounded-md"><%= post.content %></div>
+              <input type="hidden" name="content" id="content">
+              <p class="mt-1 text-xs text-gray-500">Share detailed information, ask questions, or provide expertise</p>
+            </div>
+            
+            <!-- Publish Options -->
+            <div class="pt-4 border-t border-gray-200">
+              <div class="flex items-center">
+                <input type="checkbox" id="isPublished" name="isPublished" <%= post.isPublished !== false ? 'checked' : '' %>
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                <label for="isPublished" class="ml-2 block text-sm text-gray-700">
+                  Published
+                </label>
+              </div>
+              <p class="mt-1 text-xs text-gray-500">Uncheck to save as draft</p>
+            </div>
+          </div>
+          
+          <!-- Form Actions -->
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
+            <form id="deleteForm" action="/expert/forum/delete/<%= post._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this post? This action cannot be undone.')">
+              <button type="submit" class="px-4 py-2 text-sm text-red-600 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50">
+                <i class="fas fa-trash-alt mr-1.5"></i> Delete Post
+              </button>
+            </form>
+            <div>
+              <button type="button" onclick="window.location.href='/expert/forum/post/<%= post._id %>'" class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 mr-2">
+                Cancel
+              </button>
+              <button type="submit" id="submitButton" class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700">
+                Update Post
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Edit History -->
+      <% if (post.isEdited && post.lastEditedAt) { %>
+        <div class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h3 class="font-medium text-gray-800 mb-2">Edit History</h3>
+          <div class="text-sm text-gray-600">
+            <p><i class="fas fa-clock mr-1.5"></i> Last edited on <%= new Date(post.lastEditedAt).toLocaleString() %></p>
+            <% if (post.comments && post.comments.length > 0) { %>
+              <p class="mt-1 text-xs text-gray-500">
+                <i class="fas fa-info-circle mr-1.5"></i> This post has <%= post.comments.length %> comment<%= post.comments.length > 1 ? 's' : '' %>. Users will see that it has been edited.
+              </p>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <!-- Include Quill.js for rich text editing -->
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Toggle mobile sidebar
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      const sidebar = document.querySelector('nav');
+      
+      if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+          sidebar.classList.toggle('-translate-x-full');
+        });
+      }
+
+      // Initialize Quill editor
+      const quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Share your expertise, advice, or question here...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link'],
+            ['clean']
+          ]
+        }
+      });
+
+      // Set initial content after Quill initialization
+      const contentFromServer = `<%- post.content.replace(/"/g, '\\"').replace(/'/g, "\\'").replace(/\n/g, '') %>`;
+      if (contentFromServer) {
+        quill.clipboard.dangerouslyPasteHTML(contentFromServer);
+      }
+
+      // Update hidden input with editor content before form submission
+      const form = document.getElementById('editPostForm');
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get content from Quill editor
+        const content = document.getElementById('content');
+        content.value = quill.root.innerHTML;
+        
+        // Check if title and content are provided
+        const title = document.getElementById('title').value.trim();
+        const category = document.getElementById('category').value;
+        
+        if (!title) {
+          alert('Please enter a title for your post.');
+          return;
+        }
+        
+        if (!category) {
+          alert('Please select a category for your post.');
+          return;
+        }
+        
+        if (quill.getText().trim().length < 10) {
+          alert('Please enter some content for your post.');
+          return;
+        }
+        
+        // Limit tags to 5
+        const tagsInput = document.getElementById('tags').value;
+        if (tagsInput) {
+          const tagsArray = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
+          if (tagsArray.length > 5) {
+            alert('Please limit your post to 5 tags maximum.');
+            return;
+          }
+        }
+        
+        // Update button text to show loading state
+        const submitButton = document.getElementById('submitButton');
+        submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1.5"></i> Updating...';
+        submitButton.disabled = true;
+        
+        // Submit the form
+        this.submit();
+      });
+    });
+  </script>
+  <%- include('../../partials/expert-footer') %>
+</body>
+</html>

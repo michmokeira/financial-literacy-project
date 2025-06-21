@@ -1,0 +1,85 @@
+<!-- views/partials/expert-header.ejs -->
+<% var notifications = typeof notifications !== 'undefined' ? notifications : []; %>
+<% var unreadCount = typeof unreadCount !== 'undefined' ? unreadCount : 0; %>
+<header class="fixed top-0 right-0 left-0 md:left-64 bg-white border-b border-gray-200 z-30">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Search Bar -->
+      <div class="flex-1 max-w-lg">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400 text-sm"></i>
+          </div>
+          <input type="text" 
+                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm" 
+                 placeholder="Search courses, topics...">
+        </div>
+      </div>
+
+      <!-- Right Side Items -->
+      <div class="flex items-center space-x-4">
+        <!-- Notifications -->
+        <div class="relative" x-data="{ open: false }">
+          <button @click="open = !open" class="text-gray-600 hover:text-gray-900 focus:outline-none relative">
+            <i class="fas fa-bell text-xl"></i>
+            <% if (unreadCount > 0) { %>
+              <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                <%= unreadCount %>
+              </span>
+            <% } %>
+          </button>
+
+          <!-- Notifications Dropdown -->
+          <div x-show="open" 
+               @click.away="open = false"
+               class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+            <div class="px-4 py-2 border-b border-gray-200">
+              <div class="flex justify-between items-center">
+                <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
+                <a href="/expert/notifications" class="text-xs text-blue-600 hover:text-blue-800">View all</a>
+              </div>
+            </div>
+            <div class="max-h-96 overflow-y-auto">
+              <% if (notifications.length > 0) { %>
+                <% notifications.slice(0, 5).forEach(notification => { %>
+                  <a href="<%= notification.referenceType === 'Blog' ? `/blog/${notification.reference}` : 
+                           notification.referenceType === 'ForumPost' ? `/forum/post/${notification.reference}` : '#' %>"
+                     class="block px-4 py-3 hover:bg-gray-50 <%= !notification.isRead ? 'bg-blue-50' : '' %>">
+                    <div class="flex items-start space-x-3">
+                      <img src="<%= notification.sender.profileImage || '/images/default-avatar.png' %>"
+                           alt="<%= notification.sender.username %>"
+                           class="h-8 w-8 rounded-full">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm text-gray-900 line-clamp-2">
+                          <%= notification.content %>
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">
+                          <%= new Date(notification.createdAt).toLocaleString() %>
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                <% }); %>
+              <% } else { %>
+                <div class="px-4 py-3 text-center text-gray-500 text-sm">
+                  No new notifications
+                </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        <!-- User Profile Link - Direct link to profile without dropdown -->
+        <a href="/expert/profile" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors">  
+          <img class="h-8 w-8 rounded-full object-cover border border-gray-200"
+                src="<%= user?.profileImage || '/images/default-avatar.png' %>"
+                alt="<%= user?.username || 'Expert' %>">
+          <span class="hidden md:block text-sm font-medium">
+            <%= user?.username || 'Expert' %>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+<!-- Alpine.js for dropdown functionality -->
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script> 

@@ -1,0 +1,409 @@
+<!-- Forum Content Partial -->
+<!-- Parameters expected:
+  - view: 'list' or 'single'
+  - posts: array of posts (for list view)
+  - post: single post object (for single view)
+  - user: current user object
+  - filters: { category, search, sort } (for list view)
+-->
+
+<% if (view === 'list') { %>
+  <!-- Filter & Sort Controls -->
+  <div class="bg-white rounded-lg border border-gray-200 mb-4">
+    <div class="p-3 flex flex-wrap items-center justify-between gap-2">
+      <!-- Category Filter -->
+      <div class="inline-flex items-center space-x-2">
+        <label for="category-filter" class="text-sm text-gray-700">Category:</label>
+        <select id="category-filter" class="text-sm border-gray-300 rounded-md" onchange="applyFilters()">
+          <option value="">All Categories</option>
+          <% ['Investing', 'Saving', 'Budgeting', 'Debt Management', 'Retirement', 'Taxes', 'Insurance', 'Credit', 'Mortgage', 'Cryptocurrency', 'Stocks', 'Other'].forEach(cat => { %>
+            <option value="<%= cat.toLowerCase() %>" <%= filters.category === cat.toLowerCase() ? 'selected' : '' %>><%= cat %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Sorting -->
+      <div class="inline-flex items-center space-x-2">
+        <label for="sort-by" class="text-sm text-gray-700">Sort by:</label>
+        <select id="sort-by" class="text-sm border-gray-300 rounded-md" onchange="applyFilters()">
+          <option value="newest" <%= filters.sort === 'newest' ? 'selected' : '' %>>Newest</option>
+          <option value="oldest" <%= filters.sort === 'oldest' ? 'selected' : '' %>>Oldest</option>
+          <option value="popular" <%= filters.sort === 'popular' ? 'selected' : '' %>>Most Viewed</option>
+          <option value="mostComments" <%= filters.sort === 'mostComments' ? 'selected' : '' %>>Most Comments</option>
+        </select>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="flex items-center w-full md:w-auto mt-2 md:mt-0">
+        <div class="relative w-full md:w-64">
+          <input type="text" 
+            id="search-input" 
+            placeholder="Forum Search" 
+            value="<%= filters.search || '' %>" 
+            class="block w-full px-4 py-2 border border-gray-300 rounded-lg placeholder-gray-500 text-sm">
+            <button id="search-btn" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500" onclick="applyFilters()">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Posts Grid -->
+  <div class="space-y-4">
+    <% if (posts && posts.length > 0) { %>
+      <% posts.forEach(post => { %>
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+          <div class="p-6">
+            <!-- Post Title -->
+            <a href="/<%= user?.role === 'expert' ? 'expert/' : '' %>forum/post/<%= post._id %>" 
+               class="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors block mb-4">
+              <%= post.title %>
+            </a>
+
+            <!-- Author Info -->
+            <div class="flex items-center space-x-3 mb-4">
+              <img src="<%= post.author.profileImage || '/images/default-profile.png' %>" 
+                   alt="<%= post.author.username %>" 
+                   class="h-4 w-4 rounded-full object-cover">
+              <div>
+                <div class="flex items-center gap-4">
+                  <span class="font-medium text-gray-900"><%= post.author.username %></span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium gap-2
+                    <%= post.author.role === 'expert' ? 'bg-green-100 text-green-800' : 
+                       (post.author.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-pink-100 text-pink-800') %>">
+                    <i class="fas fa-<%= post.author.role === 'expert' ? 'certificate' : 
+                                   (post.author.role === 'admin' ? 'shield' : 'user') %> mr-1"></i>
+                    <%= post.author.role.charAt(0).toUpperCase() + post.author.role.slice(1) %>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Post Content -->
+            <div class="mb-4">
+              <p class="text-gray-600 text-sm line-clamp-3">
+                <%- post.content.replace(/<[^>]*>/g, '').substring(0, 250) + '...' %>
+              </p>
+            </div>
+
+            <!-- Post Footer -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+              <!-- Stats -->
+              <div class="flex items-center space-x-4 text-sm text-gray-500">
+                <span class="flex items-center">
+                  <i class="far fa-eye mr-1"></i>
+                  <%= post.views || 0 %>
+                </span>
+                <span class="flex items-center">
+                  <i class="far fa-heart mr-1"></i>
+                  <span class="likes-count-<%= post._id %>"><%= post.likes ? post.likes.length : 0 %></span>
+                </span>
+                <span class="flex items-center">
+                  <i class="far fa-comment mr-1"></i>
+                  <span class="comments-count-<%= post._id %>"><%= post.comments ? post.comments.length : 0 %></span>
+                </span>
+              </div>
+
+              <!-- Time and Category -->
+              <div class="flex items-center space-x-4 text-sm text-gray-500">
+                <span>
+                  <% 
+                    const date = new Date(post.createdAt);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - date);
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+                    
+                    let timeAgo;
+                    if (diffDays > 0) {
+                      timeAgo = diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
+                    } else if (diffHours > 0) {
+                      timeAgo = diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
+                    } else {
+                      timeAgo = diffMinutes + ' minute' + (diffMinutes > 1 ? 's' : '') + ' ago';
+                    }
+                  %>
+                  <i class="far fa-clock mr-1"></i><%= timeAgo %>
+                </span>
+                <% if (post.category) { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <%= post.category %>
+                  </span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="text-center py-10 bg-white rounded-lg border border-gray-200">
+        <i class="fas fa-inbox text-4xl text-gray-400 mb-3"></i>
+        <h3 class="text-lg font-medium text-gray-900">No posts found</h3>
+        <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter criteria</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Pagination -->
+  <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <div class="mt-6 flex justify-center">
+      <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        <% for(let i = 1; i <= totalPages; i++) { %>
+          <a href="?page=<%= i %><%= filters.category ? '&category=' + filters.category : '' %><%= filters.search ? '&search=' + filters.search : '' %><%= filters.sort ? '&sort=' + filters.sort : '' %>"
+             class="relative inline-flex items-center px-4 py-2 border text-sm font-medium
+                    <%= currentPage === i ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50' %>
+                    <%= i === 1 ? 'rounded-l-md' : '' %>
+                    <%= i === totalPages ? 'rounded-r-md' : '' %>">
+            <%= i %>
+          </a>
+        <% } %>
+      </nav>
+    </div>
+  <% } %>
+
+<% } else { %>
+  <!-- Single Post View -->
+  <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-5">
+    <!-- Post Header -->
+    <div class="p-5 border-b border-gray-100">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900"><%= post.title %></h1>
+        
+        <!-- Post Actions for Author -->
+        <% if (user && (post.author._id.toString() === user._id.toString() || user.role === 'admin')) { %>
+          <div class="flex gap-4">
+            <a href="/<%= user.role === 'expert' ? 'expert/forum/edit' : 'forum/post' %>/<%= post._id %>" 
+               class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 transition-colors gap-4">
+              <i class="fas fa-edit mr-1"></i> Edit
+            </a>
+            <button type="button" 
+                    class="inline-flex items-center px-4 py-2 bg-red-50 border border-red-300 text-red-700 text-sm rounded-md hover:bg-red-100 transition-colors gap-4" 
+                    onclick="confirmDelete()">
+              <i class="fas fa-trash-alt mr-1"></i> Delete
+            </button>
+            <form id="deleteForm" 
+                  action="/<%= user.role === 'expert' ? 'expert/forum/delete' : 'forum/post' %>/<%= post._id %>" 
+                  method="POST" 
+                  class="hidden">
+            </form>
+          </div>
+        <% } %>
+      </div>
+      
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <!-- Author Info -->
+        <div class="flex items-center space-x-3">
+          <img src="<%= post.author.profileImage || '/images/default-profile.png' %>" 
+               alt="<%= post.author.username %>" 
+               class="w-4 h-4 rounded-full object-cover">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-gray-900"><%= post.author.username %></span>
+              <span class="inline-flex items-center px-4 py-2 rounded-full text-xs font-medium
+                <%= post.author.role === 'expert' ? 'bg-green-100 text-green-800' : 
+                   (post.author.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-pink-100 text-pink-800') %>">
+                <i class="fas fa-<%= post.author.role === 'expert' ? 'certificate' : 
+                               (post.author.role === 'admin' ? 'shield' : 'user') %> mr-1"></i>
+                <%= post.author.role.charAt(0).toUpperCase() + post.author.role.slice(1) %>
+              </span>
+            </div>
+            <div class="text-xs text-gray-500">
+              <i class="far fa-clock mr-1"></i>
+              <%= new Date(post.createdAt).toLocaleDateString() %>
+              <% if (post.updatedAt && post.updatedAt.toString() !== post.createdAt.toString()) { %>
+                <span class="mx-1">•</span>
+                <i class="far fa-edit mr-1"></i>
+                Edited <%= new Date(post.updatedAt).toLocaleDateString() %>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post Metadata -->
+        <div class="flex items-center space-x-3 text-xs text-gray-500">
+          <span class="flex items-center">
+            <i class="far fa-eye mr-1"></i>
+            <%= post.views || 0 %> views
+          </span>
+          <span class="flex items-center">
+            <i class="far fa-comment mr-1"></i>
+            <span class="comments-count-<%= post._id %>"><%= post.comments ? post.comments.length : 0 %></span> comments
+          </span>
+          <span class="flex items-center">
+            <i class="<%= post.likes && user && post.likes.includes(user._id) ? 'fas' : 'far' %> fa-heart mr-1 like-icon-<%= post._id %>"></i>
+            <span class="likes-count-<%= post._id %>"><%= post.likes ? post.likes.length : 0 %></span> likes
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post Content -->
+    <div class="p-5 prose max-w-none">
+      <%- post.content %>
+    </div>
+
+    <!-- Post Actions -->
+    <div class="px-5 py-3 bg-gray-50 border-t border-gray-100">
+      <div class="flex items-center flex-wrap gap-4 pl-3">
+        <button onclick="toggleLike('<%= post._id %>')" 
+                class="inline-flex items-center px-2 py-2 rounded-md text-sm font-medium <%= isLiked ? 'bg-pink-50 text-pink-600 border border-pink-200' : 'bg-white text-gray-600 border border-pink-200 hover:bg-gray-50' %> transition-colors gap-4">
+          <i class="<%= isLiked ? 'fas' : 'far' %> fa-heart mr-1"></i>
+          Like
+        </button>
+        <button onclick="sharePost('<%= post.title %>')" 
+                class="inline-flex items-center px-2 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors gap-4">
+          <i class="fas fa-share-alt mr-1"></i>
+          Share
+        </button>
+        <% if (user && user._id.toString() !== post.author._id.toString()) { %>
+          <button onclick="showFlagModal()" 
+                  class="inline-flex items-center px-2 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors gap-4">
+            <i class="fas fa-flag mr-1"></i>
+            Flag
+          </button>
+        <% } %>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<!-- Flag Modal -->
+<div id="flagModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg max-w-md w-full p-5">
+      <h3 class="text-lg font-medium mb-3">Report Post</h3>
+      <form id="flagForm" onsubmit="submitFlag(event)">
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+          <select id="flagReason" class="w-full border-gray-300 rounded-md" required>
+            <option value="">Select a reason</option>
+            <option value="spam">Spam</option>
+            <option value="harassment">Harassment</option>
+            <option value="misinformation">Misinformation</option>
+            <option value="inappropriate">Inappropriate Content</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea id="flagDescription" rows="3" class="w-full border-gray-300 rounded-md" required></textarea>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="closeFlagModal()" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Cancel
+          </button>
+          <button type="submit" class="px-3 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">
+            Submit Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+async function toggleLike(postId) {
+  try {
+    const response = await fetch(`/forum/post/${postId}/like`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json();
+    
+    if (data.success) {
+      const button = event.target.closest('button');
+      const icon = button.querySelector('i');
+      
+      // Toggle button appearance
+      if (data.liked) {
+        button.classList.add('bg-pink-50', 'text-pink-600', 'border-pink-200');
+        button.classList.remove('bg-white', 'text-gray-600', 'hover:bg-gray-50');
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+      } else {
+        button.classList.remove('bg-pink-50', 'text-pink-600', 'border-pink-200');
+        button.classList.add('bg-white', 'text-gray-600', 'hover:bg-gray-50');
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+      }
+      
+      // Update like count
+      document.querySelector('.likes-count').textContent = data.likeCount;
+    }
+  } catch (error) {
+    console.error('Error toggling like:', error);
+  }
+}
+
+function sharePost(postTitle) {
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator.share({
+      title: postTitle || 'Forum Post',
+      url: url
+    }).catch(console.error);
+  } else {
+    navigator.clipboard.writeText(url)
+      .then(() => alert('Link copied to clipboard!'))
+      .catch(console.error);
+  }
+}
+
+function confirmDelete() {
+  if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    document.getElementById('deleteForm').submit();
+  }
+}
+
+function showFlagModal() {
+  document.getElementById('flagModal').classList.remove('hidden');
+}
+
+function closeFlagModal() {
+  document.getElementById('flagModal').classList.add('hidden');
+}
+
+function applyFilters() {
+  const category = document.getElementById('category-filter').value;
+  const search = document.getElementById('search-input').value;
+  const sort = document.getElementById('sort-by').value;
+  
+  const params = new URLSearchParams();
+  if (category) params.append('category', category);
+  if (search) params.append('search', search);
+  if (sort) params.append('sort', sort);
+  
+  window.location.search = params.toString();
+}
+
+<% if (view === 'single') { %>
+async function submitFlag(event) {
+  event.preventDefault();
+  
+  const postId = '<%= post._id %>';
+  const reason = document.getElementById('flagReason').value;
+  const description = document.getElementById('flagDescription').value;
+  
+  try {
+    const response = await fetch(`/forum/post/${postId}/flag`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason, description })
+    });
+    const data = await response.json();
+    
+    if (data.success) {
+      alert('Thank you for your report. We will review it shortly.');
+      closeFlagModal();
+    } else {
+      alert('Error submitting report: ' + data.message);
+    }
+  } catch (error) {
+    console.error('Error submitting flag:', error);
+    alert('An error occurred while submitting your report. Please try again later.');
+  }
+}
+<% } %>
+</script>

@@ -1,0 +1,95 @@
+<!-- views/partials/sidebar.ejs -->
+<nav class="fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 text-gray-700 shadow-sm z-40">
+    <!-- Logo Section -->
+    <div class="p-6 border-b border-gray-100">
+        <h2 class="text-xl font-bold text-blue-700">FinLit</h2>
+    </div>
+    
+    <!-- Main Navigation -->
+    <div class="overflow-y-auto h-full pb-16">
+        <ul class="py-4">
+            <li>
+                <a href="/dashboard" class="flex items-center px-6 py-3 text-sm font-medium transition-all duration-200 <%= activePage === 'dashboard' ? 'text-blue-700 bg-blue-50 border-l-4 border-blue-700' : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50' %>">
+                    <i class="fas fa-home w-5 text-gray-400 <%= activePage === 'dashboard' ? 'text-blue-700' : '' %>"></i>
+                    <span class="ml-4">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/courses/enrolled" class="flex items-center px-6 py-3 text-sm font-medium transition-all duration-200 <%= activePage === 'my-courses' ? 'text-blue-700 bg-blue-50 border-l-4 border-blue-700' : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50' %>">
+                    <i class="fas fa-book w-5 text-gray-400 <%= activePage === 'my-courses' ? 'text-blue-700' : '' %>"></i>
+                    <span class="ml-4">My Courses</span>
+                </a>
+            </li>
+            <li>
+                <a href="/forum" class="flex items-center px-6 py-3 text-sm font-medium transition-all duration-200 <%= activePage === 'forum' ? 'text-blue-700 bg-blue-50 border-l-4 border-blue-700' : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50' %>">
+                    <i class="fas fa-comments w-5 text-gray-400 <%= activePage === 'forum' ? 'text-blue-700' : '' %>"></i>
+                    <span class="ml-4">Forum</span>
+                </a>
+            </li>
+            <li>
+                <a href="/blog" class="flex items-center px-6 py-3 text-sm font-medium transition-all duration-200 <%= activePage === 'blog' ? 'text-blue-700 bg-blue-50 border-l-4 border-blue-700' : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50' %>">
+                    <i class="fas fa-blog w-5 text-gray-400 <%= activePage === 'blog' ? 'text-blue-700' : '' %>"></i>
+                    <span class="ml-4">Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="/profile" class="flex items-center px-6 py-3 text-sm font-medium transition-all duration-200 <%= activePage === 'profile' ? 'text-blue-700 bg-blue-50 border-l-4 border-blue-700' : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50' %>">
+                    <i class="fas fa-user w-5 text-gray-400 <%= activePage === 'profile' ? 'text-blue-700' : '' %>"></i>
+                    <span class="ml-4">Profile</span>
+                </a>
+            </li>
+        </ul>
+        
+        <!-- Bottom Section -->
+        <div class="absolute bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-100">
+            <div class="p-4">
+                <a href="/profile?tab=settings" class="flex items-center px-2 py-2 text-sm text-gray-600 hover:text-blue-700 hover:bg-white rounded-md transition-all duration-200">
+                    <i class="fas fa-cog w-5"></i>
+                    <span class="ml-4">Settings</span>
+                </a>
+                <a href="/logout" class="flex items-center px-2 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-white rounded-md transition-all duration-200 mt-1">
+                    <i class="fas fa-sign-out-alt w-5"></i>
+                    <span class="ml-4">Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Menu Button -->
+<button id="sidebarToggle" class="fixed top-4 left-4 z-50 md:hidden bg-white border border-gray-200 text-gray-700 p-3 rounded-lg shadow-lg">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Overlay for mobile -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-30 z-30 hidden md:hidden"></div>
+
+<script>
+    // Sidebar toggle functionality for mobile
+    const sidebar = document.querySelector('nav');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    // Initialize sidebar position for mobile
+    if (window.innerWidth < 768) {
+        sidebar.classList.add('-translate-x-full');
+    }
+    
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
+    
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.add('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+</script>

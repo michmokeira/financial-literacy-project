@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile | FinLit</title>
+  <link href="/css/output.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body class="bg-gray-50">
+  <%- include('./partials/sidebar', { activePage: 'profile' }) %>
+  <%- include('./partials/header', { user: user }) %>
+
+  <main class="pt-12 md:ml-64 min-h-screen">
+    <!-- Flash messages -->
+    <% if (locals.messages && locals.messages.success) { %>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <%= locals.messages.success %>
+        </div>
+      </div>
+    <% } %>
+    
+    <% if (locals.messages && locals.messages.error) { %>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <%= locals.messages.error %>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Profile Header Section with Tabs -->
+      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+        <div class="p-6">
+          <div class="flex flex-col md:flex-row gap-6 mb-6">
+            <div class="relative w-32 h-32 md:w-40 md:h-40 mx-auto md:mx-0">
+              <img src="<%= user.profileImage || '/images/default-profile.png' %>" alt="<%= user.username %>" class="w-full h-full rounded-full object-cover border-4 border-blue-100">
+              <button class="absolute bottom-0 right-0 w-10 h-10 bg-blue-600 rounded-full text-white flex items-center justify-center hover:bg-blue-700 transition-colors" onclick="document.getElementById('imageUploadForm').classList.toggle('hidden')">
+                <i class="fas fa-camera text-sm"></i>
+              </button>
+            </div>
+            
+            <div class="flex-1 text-center md:text-left">
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><%= user.username %></h1>
+              <div class="mb-4">
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium 
+                  <%= user.role === 'expert' ? 'bg-blue-100 text-blue-800' : user.role === 'admin' ? 'bg-pink-100 text-pink-800' : 'bg-green-100 text-green-800' %>">
+                  <i class="fas fa-<%= user.role === 'expert' ? 'certificate' : (user.role === 'admin' ? 'shield' : 'user') %>"></i>
+                  <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                </span>
+              </div>
+              <div class="flex flex-wrap gap-6 justify-center md:justify-start">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-gray-900"><%= user.completedCourses.length %></div>
+                  <div class="text-sm text-gray-600">Courses Completed</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-gray-900"><%= user.badges.length %></div>
+                  <div class="text-sm text-gray-600">Badges Earned</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-gray-900"><%= user.forumPosts.length %></div>
+                  <div class="text-sm text-gray-600">Forum Posts</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Form for image upload (hidden by default) -->
+          <div class="hidden mt-4 p-4 bg-gray-50 rounded-lg" id="imageUploadForm">
+            <form action="/profile/update" method="POST" enctype="multipart/form-data">
+              <div class="space-y-4">
+                <div>
+                  <label for="profileImage" class="block text-sm font-medium text-gray-700 mb-1">Change Profile Picture</label>
+                  <input type="file" name="profileImage" id="profileImage" accept="image/*" required
+                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                  <p class="mt-1 text-sm text-gray-500">Max size: 5MB. Accepted formats: JPG, PNG, GIF</p>
+                </div>
+                <div class="flex justify-end gap-3">
+                  <button type="button" onclick="document.getElementById('imageUploadForm').classList.add('hidden')" 
+                          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                    Cancel
+                  </button>
+                  <button type="submit" 
+                          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+                    Upload
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Profile Tabs -->
+          <div class="mt-6 border-b border-gray-200">
+            <nav class="-mb-px flex justify-between md:justify-around overflow-x-auto">
+              <button class="tab-button active text-blue-600 border-blue-500 whitespace-nowrap py-4 px-2 md:px-4 border-b-2 font-medium text-sm flex-1 text-center" onclick="showTab('profile-overview')">
+                <i class="fas fa-user-circle md:mr-2"></i>
+                <span class="hidden md:inline">Overview</span>
+              </button>
+              <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-2 md:px-4 border-b-2 font-medium text-sm flex-1 text-center" onclick="showTab('profile-courses')">
+                <i class="fas fa-book md:mr-2"></i>
+                <span class="hidden md:inline">Courses</span>
+              </button>
+              <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-2 md:px-4 border-b-2 font-medium text-sm flex-1 text-center" onclick="showTab('profile-badges')">
+                <i class="fas fa-award md:mr-2"></i>
+                <span class="hidden md:inline">Badges</span>
+              </button>
+              <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-2 md:px-4 border-b-2 font-medium text-sm flex-1 text-center" onclick="showTab('profile-activity')">
+                <i class="fas fa-chart-line md:mr-2"></i>
+                <span class="hidden md:inline">Activity</span>
+              </button>
+              <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-2 md:px-4 border-b-2 font-medium text-sm flex-1 text-center" onclick="showTab('profile-settings')">
+                <i class="fas fa-cog md:mr-2"></i>
+                <span class="hidden md:inline">Settings</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Profile Tab Contents -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="profile-overview">
+          <div class="space-y-6">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-user-circle text-blue-600"></i> About Me
+              </h2>
+              <div class="bg-gray-50 rounded-lg p-4 relative">
+                <% if (user.bio) { %>
+                  <p class="text-gray-700"><%= user.bio %></p>
+                <% } else { %>
+                  <p class="text-gray-500 italic">No bio has been added yet. Share a bit about yourself.</p>
+                <% } %>
+                <button class="absolute top-3 right-3 text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1" onclick="toggleEditForm('bio-form')">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                
+                <!-- Bio Edit Form (Hidden by default) -->
+                <div class="hidden mt-4 pt-4 border-t border-gray-200" id="bio-form">
+                  <form action="/profile/update" method="POST">
+                    <div class="space-y-4">
+                      <div>
+                        <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">About Me</label>
+                        <textarea name="bio" id="bio" rows="4" placeholder="Tell us about yourself..." 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><%= user.bio || '' %></textarea>
+                      </div>
+                      <div class="flex justify-end gap-3">
+                        <button type="button" onclick="toggleEditForm('bio-form')" 
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                          Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-gray-50 rounded-lg p-4 flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-graduation-cap text-blue-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-900"><%= user.completedCourses.length %></div>
+                  <div class="text-sm text-gray-600">Courses Completed</div>
+                </div>
+              </div>
+              
+              <div class="bg-gray-50 rounded-lg p-4 flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-award text-blue-600"></i>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-gray-900"><%= user.badges.length %></div>
+                  <div class="text-sm text-gray-600">Badges Earned</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Recent Courses -->
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <i class="fas fa-book text-blue-600"></i> Recent Courses
+                </h2>
+                <a href="#" onclick="showTab('profile-courses')" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                  View All <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+              
+              <% if (user.enrolledCourses && user.enrolledCourses.length > 0) { %>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <% user.enrolledCourses.slice(0, 2).forEach(enrolledCourse => { %>
+                    <% if (enrolledCourse.course) { %>
+                      <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="mb-3">
+                          <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: <%= enrolledCourse.progress %>%;"></div>
+                          </div>
+                          <div class="text-right text-sm text-gray-600 mt-1"><%= enrolledCourse.progress %> % Complete</div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                          <h3 class="font-medium text-gray-900"><%= enrolledCourse.course.title %></h3>
+                          <a href="/courses/<%= enrolledCourse.course._id %>" 
+                             class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                            Continue
+                          </a>
+                        </div>
+                      </div>
+                    <% } %>
+                  <% }); %>
+                </div>
+              <% } else { %>
+                <div class="text-center py-8 bg-gray-50 rounded-lg">
+                  <i class="fas fa-book-open text-3xl text-gray-400 mb-2"></i>
+                  <p class="text-gray-600 mb-3">You haven't enrolled in any courses yet</p>
+                  <a href="/courses" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    Browse Courses
+                  </a>
+                </div>
+              <% } %>
+            </div>
+            
+            <!-- Recent Badges -->
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <i class="fas fa-award text-blue-600"></i> Recent Badges
+                </h2>
+                <a href="#" onclick="showTab('profile-badges')" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                  View All <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+              
+              <% if (user.badges && user.badges.length > 0) { %>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <% user.badges.slice(0, 4).forEach(badge => { %>
+                    <div class="text-center">
+                      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fas fa-certificate text-blue-600 text-2xl"></i>
+                      </div>
+                      <div class="text-sm text-gray-700"><%= badge.name %></div>
+                    </div>
+                  <% }); %>
+                </div>
+              <% } else { %>
+                <div class="text-center py-8 bg-gray-50 rounded-lg">
+                  <i class="fas fa-award text-3xl text-gray-400 mb-2"></i>
+                  <p class="text-gray-600 mb-1">You haven't earned any badges yet</p>
+                  <p class="text-sm text-gray-500">Complete courses to earn badges!</p>
+                </div>
+              <% } %>
+            </div>
+            
+            <!-- Expert Status -->
+            <% if (user.role === 'learner' && user.expertRequestStatus !== 'approved') { %>
+              <div class="bg-gray-50 rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <i class="fas fa-certificate text-blue-600"></i> Become an Expert
+                </h2>
+                
+                <div class="text-gray-700 mb-4">
+                  <p class="mb-4">As an expert, you'll be able to write blog posts, answer questions in the forum, and help other learners.</p>
+                  
+                  <% if (user.expertRequestStatus === 'none') { %>
+                    <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="toggleEditForm('expert-request-form')">
+                      <i class="fas fa-user-graduate mr-2"></i> Request Expert Status
+                    </button>
+                  <% } else if (user.expertRequestStatus === 'pending') { %>
+                    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+                      <i class="fas fa-clock mr-2"></i>
+                      Your expert application is pending review. We'll notify you when it's processed.
+                    </div>
+                  <% } else if (user.expertRequestStatus === 'rejected') { %>
+                    <div class="space-y-3">
+                      <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+                        <i class="fas fa-times-circle mr-2"></i>
+                        Your expert application was not approved. You can submit a new application.
+                      </div>
+                      <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="toggleEditForm('expert-request-form')">
+                        <i class="fas fa-user-graduate mr-2"></i> Submit New Application
+                      </button>
+                    </div>
+                  <% } %>
+                  
+                  <!-- Expert Request Form (Hidden by default) -->
+                  <div class="hidden mt-4 pt-4 border-t border-gray-200" id="expert-request-form">
+                    <form action="/profile/request-expert" method="POST" enctype="multipart/form-data">
+                      <div class="space-y-2">
+                        <div>
+                          <label for="message" class="block text-sm font-medium text-gray-700">Why do you want to become an expert?</label>
+                          <textarea 
+                          name="message" id="message" 
+                          rows="10" placeholder="Explain your qualifications and why you'd like to become an expert..." 
+                          required
+                          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus-ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                        <div>
+                          <label for="documents" class="block text-sm font-medium text-gray-700 mb-1">Upload Supporting Documents (optional)</label>
+                          <input type="file" name="documents" id="documents" multiple
+                                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                          <p class="mt-1 text-sm text-gray-500">You can upload certificates, diplomas, or any other relevant documents (PDF, Word, or images).</p>
+                        </div>
+                        <div class="flex gap-4 pt-2">
+                          <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"> Submit Application
+                          </button>
+                          <button type="button" onclick="toggleEditForm('expert-request-form')" 
+                                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            <% } else if (user.role === 'expert') { %>
+              <div class="bg-green-50 rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <i class="fas fa-star text-green-600"></i> Expert Status
+                </h2>
+                <div class="text-green-800 bg-green-100 inline-flex items-center px-3 py-1 rounded-lg">
+                  <i class="fas fa-check-circle mr-2"></i>
+                  You are a verified expert on our platform. You can write blog posts and answer questions in the forum.
+                </div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+        
+        <!-- Courses Tab -->
+        <div class="tab-content hidden" id="profile-courses">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-graduation-cap text-blue-600"></i> Your Courses
+          </h2>
+          
+          <!-- In Progress Courses -->
+          <div class="mb-8">
+            <h3 class="text-base font-medium text-gray-700 mb-4">In Progress</h3>
+            <% 
+              const inProgressCourses = user.enrolledCourses.filter(
+                enrolled => !user.completedCourses.some(
+                  completed => completed._id && enrolled.course && 
+                  completed._id.toString() === enrolled.course._id.toString()
+                )
+              );
+            %>
+            
+            <% if (inProgressCourses && inProgressCourses.length > 0) { %>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <% inProgressCourses.forEach(enrolledCourse => { %>
+                  <% if (enrolledCourse.course) { %>
+                    <div class="bg-gray-50 rounded-lg overflow-hidden">
+                      <div class="p-4">
+                        <div class="mb-3">
+                          <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: <%= enrolledCourse.progress %>%;"></div>
+                          </div>
+                          <div class="text-right text-sm text-gray-600 mt-1"><%= enrolledCourse.progress %> % Complete</div>
+                        </div>
+                        <h3 class="font-medium text-gray-900 mb-2"><%= enrolledCourse.course.title %></h3>
+                        <p class="text-sm text-gray-600 mb-3 line-clamp-2"><%= 
+                          enrolledCourse.course.description && enrolledCourse.course.description.length > 100 
+                            ? enrolledCourse.course.description.substring(0, 100) + '...' 
+                            : enrolledCourse.course.description || 'No description available'
+                        %></p>
+                        <a href="/courses/<%= enrolledCourse.course._id %>" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                          Continue
+                        </a>
+                      </div>
+                    </div>
+                  <% } %>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <div class="text-center py-8 bg-gray-50 rounded-lg">
+                <i class="fas fa-book-reader text-3xl text-gray-400 mb-2"></i>
+                <p class="text-gray-600 mb-3">You don't have any courses in progress</p>
+                <a href="/courses" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Browse Courses
+                </a>
+              </div>
+            <% } %>
+          </div>
+          
+          <!-- Completed Courses -->
+          <div>
+            <h3 class="text-base font-medium text-gray-700 mb-4">Completed</h3>
+            
+            <% if (user.completedCourses && user.completedCourses.length > 0) { %>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <% user.completedCourses.forEach(course => { %>
+                  <div class="bg-green-50 border border-green-200 rounded-lg overflow-hidden">
+                    <div class="p-4">
+                      <div class="flex justify-end mb-2">
+                        <div class="bg-green-100 text-green-700 p-2 rounded-full">
+                          <i class="fas fa-trophy"></i>
+                        </div>
+                      </div>
+                      <h3 class="font-medium text-gray-900 mb-2"><%= course.title %></h3>
+                      <p class="text-sm text-gray-600 mb-3 line-clamp-2"><%= 
+                        course.description && course.description.length > 100 
+                          ? course.description.substring(0, 100) + '...' 
+                          : course.description || 'No description available'
+                      %></p>
+                      <div class="flex items-center justify-between">
+                        <div class="text-sm text-green-600 flex items-center gap-1">
+                          <i class="fas fa-check-circle"></i> Completed
+                        </div>
+                        <a href="/courses/<%= course._id %>" 
+                           class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                          View Course <i class="fas fa-arrow-right"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <div class="text-center py-8 bg-gray-50 rounded-lg">
+                <i class="fas fa-trophy text-3xl text-gray-400 mb-2"></i>
+                <p class="text-gray-600 mb-1">You haven't completed any courses yet</p>
+                <p class="text-sm text-gray-500">Keep learning to earn completion certificates!</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+        
+        <!-- Badges Tab -->
+        <div class="tab-content hidden" id="profile-badges">
+          <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-award text-yellow-600"></i> Badges
+          </h2>
+          
+          <% if (user.badges && user.badges.length > 0) { %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <% user.badges.forEach(badge => { %>
+                <div class="bg-gray-50 rounded-lg p-4 flex gap-4">
+                  <div class="flex-shrink-0">
+                    <img src="<%= badge.image %>" alt="<%= badge.name %>" class="w-16 h-16 object-contain">
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900"><%= badge.name %></h3>
+                    <p class="text-sm text-gray-600 mb-1"><%= badge.description %></p>
+                    <% const earnedDate = badge.earnedBy && badge.earnedBy.find(eb => eb.user.toString() === user._id.toString()); %>
+                    <% if (earnedDate) { %>
+                      <span class="text-xs text-gray-500">Earned: <%= new Date(earnedDate.dateEarned).toLocaleDateString() %></span>
+                    <% } %>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="bg-gray-50 rounded-lg p-8 text-center">
+              <div class="text-gray-400 mb-3"><i class="fas fa-award text-5xl"></i></div>
+              <h3 class="text-xl font-medium text-gray-900 mb-2">No badges yet</h3>
+            </div>
+          <% } %>
+
+          <% if (isOwnProfile) { %>
+            <!-- Upcoming Badges -->
+            <div class="mt-8">
+              <h3 class="text-lg font-semibold mb-4">Badges You Can Earn</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <% 
+                const hasBadge = (name) => {
+                  return user.badges.some(badge => badge.name === name);
+                };
+                let badgeCount = 0;
+                // Course completion badge
+                if (!hasBadge('Course Master') && user.completedCourses.length < 5 && badgeCount < 3) { badgeCount++; %>
+                  <div class="bg-gray-50 rounded-lg p-4 flex gap-4 opacity-70">
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-lock text-gray-400 text-xl"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">Course Master</h3>
+                      <p class="text-sm text-gray-600 mb-1">Complete 5 courses</p>
+                      <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <% const courseWidth = Math.min(user.completedCourses.length / 5 * 100, 100) + '%'; %>
+                        <div class="bg-blue-600 h-2 rounded-full progress-bar" data-width="<%= courseWidth %>"></div>
+                      </div>
+                      <span class="text-xs text-gray-500"><%= user.completedCourses.length %>/5 courses</span>
+                    </div>
+                  </div>
+                <% } %>
+                <% if (!hasBadge('First Post') && user.forumPosts.length < 1 && badgeCount < 3) { badgeCount++; %>
+                  <div class="bg-gray-50 rounded-lg p-4 flex gap-4 opacity-70">
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-lock text-gray-400 text-xl"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">First Post</h3>
+                      <p class="text-sm text-gray-600 mb-1">Make your first forum post</p>
+                      <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-blue-600 h-2 rounded-full progress-bar" data-width="0%"></div>
+                      </div>
+                      <span class="text-xs text-gray-500">Not achieved yet</span>
+                    </div>
+                  </div>
+                <% } %>
+                <% if (!hasBadge('Forum Contributor') && user.forumPosts.length < 10 && badgeCount < 3) { badgeCount++; %>
+                  <div class="bg-gray-50 rounded-lg p-4 flex gap-4 opacity-70">
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-lock text-gray-400 text-xl"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">Forum Contributor</h3>
+                      <p class="text-sm text-gray-600 mb-1">Make 10 forum posts</p>
+                      <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <% const forumWidth = Math.min(user.forumPosts.length / 10 * 100, 100) + '%'; %>
+                        <div class="bg-blue-600 h-2 rounded-full progress-bar" data-width="<%= forumWidth %>"></div>
+                      </div>
+                      <span class="text-xs text-gray-500"><%= user.forumPosts.length %>/10 posts</span>
+                    </div>
+                  </div>
+                <% } %>
+                <% if (!hasBadge('Forum Expert') && user.forumPosts.length < 50 && badgeCount < 3) { badgeCount++; %>
+                  <div class="bg-gray-50 rounded-lg p-4 flex gap-4 opacity-70">
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-lock text-gray-400 text-xl"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">Forum Expert</h3>
+                      <p class="text-sm text-gray-600 mb-1">Make 50 forum posts</p>
+                      <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <% const expertWidth = Math.min(user.forumPosts.length / 50 * 100, 100) + '%'; %>
+                        <div class="bg-blue-600 h-2 rounded-full progress-bar" data-width="<%= expertWidth %>"></div>
+                      </div>
+                      <span class="text-xs text-gray-500"><%= user.forumPosts.length %>/50 posts</span>
+                    </div>
+                  </div>
+                <% } %>
+                <% if (!hasBadge('Popular Post') && !user.forumPosts.some(post => post.likes && post.likes.length >= 10) && badgeCount < 3) { badgeCount++; %>
+                  <div class="bg-gray-50 rounded-lg p-4 flex gap-4 opacity-70">
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-lock text-gray-400 text-xl"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">Popular Post</h3>
+                      <p class="text-sm text-gray-600 mb-1">Get 10 likes on a single post</p>
+                      <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-blue-600 h-2 rounded-full progress-bar" data-width="0%"></div>
+                      </div>
+                      <span class="text-xs text-gray-500">Not achieved yet</span>
+                    </div>
+                  </div>
+                <% } %>
+                <% if (!hasBadge('Perfect Score') && (!user.quizScores || !user.quizScores.some(score => score.score === 100)) && badgeCount < 3) { badgeCount++; %>
+                  <div class="bg-gray-50 rounded-lg p-4 flex gap-4 opacity-70">
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-lock text-gray-400 text-xl"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">Perfect Score</h3>
+                      <p class="text-sm text-gray-600 mb-1">Get 100% on any quiz</p>
+                      <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-blue-600 h-2 rounded-full progress-bar" data-width="0%"></div>
+                      </div>
+                      <span class="text-xs text-gray-500">Not achieved yet</span>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          <% } %>
+        </div>
+        
+        <!-- Activity Tab -->
+        <div class="tab-content hidden" id="profile-activity">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-chart-line text-blue-600"></i> Your Activity
+          </h2>
+          
+          <!-- Forum Activity -->
+          <div class="mb-8">
+            <h3 class="text-base font-medium text-gray-700 mb-4">Forum Activity</h3>
+            
+            <% if (user.forumPosts && user.forumPosts.length > 0) { %>
+              <div class="space-y-4">
+                <% user.forumPosts.forEach(post => { %>
+                  <div class="bg-gray-50 rounded-lg p-4 flex gap-4">
+                    <div class="flex-shrink-0">
+                      <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-comment-alt text-blue-600"></i>
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="font-medium text-gray-900 mb-1"><%= post.title %></h3>
+                      <p class="text-sm text-gray-600 mb-2 line-clamp-2"><%= 
+                        post.content && post.content.length > 150 
+                          ? post.content.substring(0, 150) + '...' 
+                          : post.content || 'No content available'
+                      %></p>
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4 text-sm text-gray-500">
+                          <span><%= post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Unknown date' %></span>
+                          <div class="flex items-center gap-3">
+                            <span class="flex items-center gap-1">
+                              <i class="fas fa-comment"></i> <%= post.comments ? post.comments.length : 0 %>
+                            </span>
+                            <span class="flex items-center gap-1">
+                              <i class="fas fa-thumbs-up"></i> <%= post.likes ? post.likes.length : 0 %>
+                            </span>
+                          </div>
+                        </div>
+                        <a href="/forum/post/<%= post._id %>" 
+                           class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                          View Post <i class="fas fa-arrow-right"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            <% } else { %>
+              <div class="text-center py-8 bg-gray-50 rounded-lg">
+                <i class="fas fa-comments text-3xl text-gray-400 mb-2"></i>
+                <p class="text-gray-600 mb-3">You haven't posted in the forum yet</p>
+                <a href="/forum" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Go to Forum
+                </a>
+              </div>
+            <% } %>
+          </div>
+          
+          <!-- Course Activity -->
+          <div>
+            <h3 class="text-base font-medium text-gray-700 mb-4">Recent Learning Activity</h3>
+            
+            <% 
+              // Create a mock learning activity list (in a real app, you'd have a proper activity log)
+              let hasActivity = user.enrolledCourses && user.enrolledCourses.some(ec => ec.completedSubtopics && ec.completedSubtopics.length > 0);
+            %>
+            
+            <% if (hasActivity) { %>
+              <div class="space-y-4">
+                <% user.enrolledCourses.forEach(enrolledCourse => { 
+                  if (enrolledCourse.course && enrolledCourse.completedSubtopics && enrolledCourse.completedSubtopics.length > 0) { 
+                %>
+                  <div class="bg-gray-50 rounded-lg p-4 flex gap-4">
+                    <div class="flex-shrink-0">
+                      <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-book-reader text-blue-600"></i>
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="font-medium text-gray-900 mb-2">Progress in <%= enrolledCourse.course.title %></h3>
+                      <div class="mb-2">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                          <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: <%= enrolledCourse.progress %>%;"></div>
+                        </div>
+                        <div class="text-right text-sm text-gray-600 mt-1"><%= enrolledCourse.progress %> % Complete</div>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">
+                          <%= enrolledCourse.completedSubtopics.length %> lessons completed
+                        </span>
+                        <a href="/courses/<%= enrolledCourse.course._id %>" 
+                           class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                          Continue Course <i class="fas fa-arrow-right"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                <% } }); %>
+              </div>
+            <% } else { %>
+              <div class="text-center py-8 bg-gray-50 rounded-lg">
+                <i class="fas fa-book text-3xl text-gray-400 mb-2"></i>
+                <p class="text-gray-600 mb-3">No recent learning activity</p>
+                <a href="/courses" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Start Learning
+                </a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div class="tab-content hidden" id="profile-settings">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <i class="fas fa-cog text-blue-600"></i> Profile Settings
+          </h2>
+          
+          <!-- Account Information -->
+          <div class="mb-8">
+            <h3 class="text-base font-medium text-gray-700 mb-4">Account Information</h3>
+            
+            <form action="/profile/update" method="POST" class="space-y-4 bg-gray-50 rounded-lg p-4">
+              <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" id="username" name="username" value="<%= user.username %>" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+              
+              <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" id="email" name="email" value="<%= user.email %>" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+              
+              <div>
+                <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">About Me</label>
+                <textarea id="bio" name="bio" rows="4"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><%= user.bio || '' %></textarea>
+              </div>
+              
+              <% if (user.role === 'expert') { %>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-3">Social Links</label>
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                      <i class="fab fa-linkedin text-blue-600 w-5"></i>
+                      <input type="url" id="linkedin" name="linkedin" placeholder="LinkedIn Profile URL" value="<%= user.socialLinks && user.socialLinks.linkedin ? user.socialLinks.linkedin : '' %>"
+                             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                      <i class="fab fa-twitter text-blue-600 w-5"></i>
+                      <input type="url" id="twitter" name="twitter" placeholder="Twitter Profile URL" value="<%= user.socialLinks && user.socialLinks.twitter ? user.socialLinks.twitter : '' %>"
+                             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                      <i class="fas fa-globe text-blue-600 w-5"></i>
+                      <input type="url" id="website" name="website" placeholder="Personal Website URL" value="<%= user.socialLinks && user.socialLinks.website ? user.socialLinks.website : '' %>"
+                             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                  </div>
+                </div>
+              <% } %>
+              
+              <div class="flex justify-end">
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Password Change -->
+          <div class="mb-8">
+            <h3 class="text-base font-medium text-gray-700 mb-4">Change Password</h3>
+            
+            <form action="/profile/change-password" method="POST" class="space-y-4 bg-gray-50 rounded-lg p-4">
+              <div>
+                <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                <input type="password" id="currentPassword" name="currentPassword" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+              
+              <div>
+                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input type="password" id="newPassword" name="newPassword" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+              
+              <div>
+                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+              
+              <div class="flex justify-end">
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Change Password
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Notifications Settings -->
+          <div>
+            <h3 class="text-base font-medium text-gray-700 mb-4">Notification Settings</h3>
+            
+            <form action="/profile/update-notifications" method="POST" class="space-y-4 bg-gray-50 rounded-lg p-4">
+              <div class="flex items-start">
+                <input type="checkbox" id="emailNotifications" name="emailNotifications" checked
+                       class="mt-1 mr-3 h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                <div>
+                  <label for="emailNotifications" class="text-sm font-medium text-gray-700">Email Notifications</label>
+                  <p class="text-sm text-gray-500">Receive email notifications about course updates, forum replies, and badges</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start">
+                <input type="checkbox" id="forumNotifications" name="forumNotifications" checked
+                       class="mt-1 mr-3 h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                <div>
+                  <label for="forumNotifications" class="text-sm font-medium text-gray-700">Forum Notifications</label>
+                  <p class="text-sm text-gray-500">Receive notifications when someone comments on your posts</p>
+                </div>
+              </div>
+              
+              <div class="flex justify-end">
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Save Notification Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Tab switching functionality
+    function showTab(tabId) {
+      // Hide all tab contents
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(tab => tab.classList.add('hidden'));
+      
+      // Deactivate all tab buttons
+      const tabButtons = document.querySelectorAll('.tab-button');
+      tabButtons.forEach(button => {
+        button.classList.remove('text-blue-600', 'border-blue-500');
+        button.classList.add('border-transparent', 'text-gray-500');
+      });
+      
+      // Activate selected tab and button
+      const selectedTab = document.getElementById(tabId);
+      if (selectedTab) {
+        selectedTab.classList.remove('hidden');
+        // Initialize progress bars when tab is shown
+        if (tabId === 'profile-badges') {
+          initializeProgressBars();
+        }
+      }
+      
+      // Find and activate the corresponding button
+      const activeButton = Array.from(tabButtons).find(button => {
+        return button.getAttribute('onclick').includes(tabId);
+      });
+      
+      if (activeButton) {
+        activeButton.classList.remove('border-transparent', 'text-gray-500');
+        activeButton.classList.add('text-blue-600', 'border-blue-500');
+      }
+    }
+    
+    // Initialize progress bars
+    function initializeProgressBars() {
+      const progressBars = document.querySelectorAll('.progress-bar');
+      progressBars.forEach(bar => {
+        const width = bar.getAttribute('data-width');
+        if (width) {
+          bar.style.width = '0';
+          setTimeout(() => {
+            bar.style.width = width;
+          }, 100);
+        }
+      });
+    }
+    
+    // Check URL for tab parameter and activate the correct tab
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      
+      if (tabParam) {
+        showTab('profile-' + tabParam);
+      } else {
+        // Set default tab to overview
+        showTab('profile-overview');
+      }
+    });
+    
+    // Toggle edit form visibility
+    function toggleEditForm(formId) {
+      const form = document.getElementById(formId);
+      if (form) {
+        form.classList.toggle('hidden');
+      }
+    }
+    
+    // Handle image preview before upload
+    document.getElementById('profileImage')?.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.querySelector('.profile-image-container img');
+          if (preview) {
+            preview.src = e.target.result;
+          }
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
+
+  <style>
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      transition: width 0.5s ease-in-out;
+    }
+  </style>
+</body>
+</html>

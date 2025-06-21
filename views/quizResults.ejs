@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= quiz.title %> | Results</title>
+  <!-- Tailwind CSS and Font Awesome for styling -->
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+  <!-- Include the sidebar and header partials -->
+  <%- include('./partials/sidebar', { activePage: 'courses' }) %>
+  <%- include('./partials/header', { user: user }) %>
+
+  <main class="pt-16 md:ml-64 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Results header section -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <!-- Quiz title and breadcrumb -->
+        <div class="mb-6">
+          <div class="text-sm text-gray-600 mb-2">
+            <a href="/dashboard" class="text-blue-600 hover:underline">Dashboard</a> &gt; 
+            <a href="/courses" class="text-blue-600 hover:underline">Courses</a> &gt; 
+            <a href="/courses/<%= courseId %>" class="text-blue-600 hover:underline"><%= quiz.title %></a> &gt; 
+            Results
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-clipboard-check text-green-600 mr-2"></i> Quiz Results
+          </h1>
+        </div>
+        
+        <!-- Attempts information section -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div class="flex items-center justify-between text-gray-700">
+            <div class="flex items-center">
+              <i class="fas fa-redo-alt mr-2"></i>
+              <span>Attempts: <strong><%= attemptsUsed %> of <%= quiz.maxAttemptsIn24Hours %> used</strong></span>
+            </div>
+            <% if (attemptsRemaining > 0) { %>
+              <span class="text-green-600 font-medium"><%= attemptsRemaining %> attempts remaining</span>
+            <% } else { %>
+              <span class="text-yellow-600 font-medium">No attempts remaining for 24 hours</span>
+            <% } %>
+          </div>
+        </div>
+        
+        <!-- Score display section -->
+        <div class="flex flex-col md:flex-row items-center gap-8 mb-8">
+          <!-- Circular score indicator -->
+          <div class="relative w-48 h-48">
+            <div class="w-full h-full rounded-full border-8 flex items-center justify-center <%= passed ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50' %>">
+              <div class="text-center">
+                <div class="text-5xl font-bold <%= passed ? 'text-green-600' : 'text-red-600' %>"><%= scorePercentage %>%</div>
+                <div class="text-gray-600 mt-1">Your Score</div>
+              </div>
+            </div>
+            <% if (passed) { %>
+              <div class="absolute -top-2 -right-2 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white">
+                <i class="fas fa-check text-xl"></i>
+              </div>
+            <% } %>
+          </div>
+          
+          <!-- Score details -->
+          <div class="flex-1 space-y-4 bg-gray-50 p-6 rounded-lg">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Questions Correct:</span>
+              <span class="font-medium text-lg"><%= correctCount %> of <%= totalQuestions %></span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Passing Score:</span>
+              <span class="font-medium text-lg"><%= passMark %>%</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600">Result:</span>
+              <span class="px-4 py-2 rounded-full text-sm font-medium <%= passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                <%= passed ? 'PASSED' : 'NOT PASSED' %>
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Pass/Fail message section -->
+        <div class="rounded-lg p-8 mb-8 <%= passed ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200' %>">
+          <% if (passed) { %>
+            <!-- Success message -->
+            <div class="flex items-center text-green-800 mb-4">
+              <i class="fas fa-trophy text-3xl mr-4"></i>
+              <div>
+                <h2 class="text-2xl font-bold">Congratulations!</h2>
+                <p class="text-green-700 mt-1">You've successfully passed this quiz and demonstrated your understanding of the material.</p>
+              </div>
+            </div>
+            
+            <!-- Badge earned section (for final quiz) -->
+            <% if (quiz.isFinalQuiz) { %>
+              <div class="mt-6 bg-white rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-green-800 mb-4 flex items-center">
+                  <i class="fas fa-award mr-2"></i> Badge Earned!
+                </h3>
+                <div class="flex items-start gap-4">
+                  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-certificate text-2xl text-green-600"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900 text-lg">Course Completion Badge</div>
+                    <div class="text-gray-600 mt-1">You've earned this badge for successfully completing the course!</div>
+                    <a href="/profile" class="inline-flex items-center mt-3 text-green-600 hover:text-green-700">
+                      View all badges
+                      <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            <% } %>
+          <% } else { %>
+            <!-- Failure message -->
+            <div class="flex items-center text-yellow-800 mb-4">
+              <i class="fas fa-exclamation-triangle text-3xl mr-4"></i>
+              <div>
+                <h2 class="text-2xl font-bold">Not Passed</h2>
+                <p class="text-yellow-700 mt-1">You didn't meet the passing threshold for this quiz.</p>
+              </div>
+            </div>
+            
+            <!-- Attempts remaining message -->
+            <div class="mt-6 bg-white rounded-lg p-6">
+              <% if (attemptsRemaining > 0) { %>
+                <div class="text-yellow-700">
+                  <p class="font-medium">You have <%= attemptsRemaining %> more attempts available in the next 24 hours.</p>
+                  <p class="mt-2">Review the material and try again when you're ready.</p>
+                </div>
+              <% } else { %>
+                <div class="text-yellow-700">
+                  <p class="font-medium">You've used all your attempts for the next 24 hours.</p>
+                  <p class="mt-2">Please review the material and try again after the cooldown period.</p>
+                </div>
+              <% } %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Questions and answers review section -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+          <i class="fas fa-search text-green-600 mr-2"></i> Review Your Answers
+        </h2>
+        
+        <!-- Individual question results -->
+        <div class="space-y-6">
+          <% questionResults.forEach((result, index) => { %>
+            <div class="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
+              <!-- Question header with result status -->
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Question <%= index + 1 %></h3>
+                <div class="px-4 py-2 rounded-full text-sm font-medium <%= result.isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                  <% if (result.isCorrect) { %>
+                    <i class="fas fa-check mr-2"></i> Correct
+                  <% } else { %>
+                    <i class="fas fa-times mr-2"></i> Incorrect
+                  <% } %>
+                </div>
+              </div>
+              
+              <div class="space-y-4">
+                <!-- Question text -->
+                <p class="text-gray-700 text-lg"><%= result.question %></p>
+                
+                <!-- Answer comparison -->
+                <div class="space-y-3">
+                  <!-- User's answer -->
+                  <div class="p-4 rounded-lg <%= result.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200' %>">
+                    <div class="text-sm font-medium text-gray-600 mb-2">Your Answer:</div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-lg <%= result.isCorrect ? 'text-green-700' : 'text-red-700' %>"><%= result.userAnswer %></span>
+                      <% if (result.isCorrect) { %>
+                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                      <% } else { %>
+                        <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                      <% } %>
+                    </div>
+                  </div>
+                  
+                  <!-- Correct answer (shown only if user's answer was incorrect) -->
+                  <% if (!result.isCorrect) { %>
+                    <div class="p-4 rounded-lg bg-green-50 border border-green-200">
+                      <div class="text-sm font-medium text-gray-600 mb-2">Correct Answer:</div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-lg text-green-700"><%= result.correctAnswer %></span>
+                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                      </div>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      
+      <!-- Navigation actions section -->
+      <div class="flex justify-center gap-4 mt-8">
+        <% if (passed) { %>
+          <!-- Next module or course navigation -->
+          <% if (nextModule) { %>
+            <a href="/courses/subtopic/<%= nextModule.subtopics[0]._id %>" class="px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center text-lg font-medium">
+              <i class="fas fa-arrow-right mr-3"></i>Continue to Next Module
+            </a>
+          <% } else { %>
+            <a href="/courses/<%= courseId %>" class="px-8 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center text-lg font-medium">
+              <i class="fas fa-arrow-right mr-3"></i>Continue to Course
+            </a>
+          <% } %>
+        <% } else { %>
+          <!-- Review and retry options -->
+          <a href="/courses/<%= courseId %>" 
+             class="px-8 py-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center text-lg font-medium">
+            <i class="fas fa-book mr-3"></i> Review Course Material
+          </a>
+          <% if (attemptsRemaining > 0) { %>
+            <a href="/courses/quiz/<%= quiz._id %>" 
+               class="px-8 py-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center text-lg font-medium">
+              <i class="fas fa-redo mr-3"></i> Try Quiz Again
+            </a>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

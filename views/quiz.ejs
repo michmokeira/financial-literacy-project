@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= quiz.title %> | Quiz</title>
+  <!-- Tailwind CSS and Font Awesome for styling -->
+  <link href="/css/output.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body class="bg-gray-50">
+  <!-- Include the sidebar and header partials -->
+  <%- include('./partials/sidebar', { activePage: 'courses' }) %>
+  <%- include('./partials/header', { user: user }) %>
+
+  <main class="pt-16 md:ml-64 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Quiz header section with title, description and attempts info -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <!-- Breadcrumb navigation -->
+        <div class="text-sm text-gray-600 mb-4">
+          <a href="/dashboard" class="text-blue-600 hover:underline">Dashboard</a> &gt; 
+          <a href="/courses" class="text-blue-600 hover:underline">Courses</a> &gt; 
+          <a href="/courses/<%= course._id %>" class="text-blue-600 hover:underline"><%= course.title %></a> &gt; 
+          <% if (module) { %>
+            <%= module.title %> &gt; 
+          <% } %>
+          <%= quiz.title %>
+        </div>
+
+        <!-- Quiz title and description -->
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+          <i class="fas fa-question-circle text-blue-600 mr-2"></i> <%= quiz.title %>
+        </h1>
+        <p class="text-gray-700 mb-6"><%= quiz.description %></p>
+
+        <!-- Attempts information section -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div class="flex items-center text-gray-700 mb-2">
+            <i class="fas fa-redo-alt mr-2"></i> 
+            <span>Attempts remaining: <strong><%= attemptsRemaining %> of <%= quiz.maxAttemptsIn24Hours %></strong></span>
+            <% if (attemptsRemaining < quiz.maxAttemptsIn24Hours) { %>
+              <span class="text-gray-500 text-sm ml-2">(Attempts reset after 24 hours)</span>
+            <% } %>
+          </div>
+          <!-- Previous attempts display -->
+          <% if (userQuizScore && userQuizScore.attempts && userQuizScore.attempts.length > 0) { %>
+            <div class="flex items-center flex-wrap gap-2 mt-2">
+              <span class="text-gray-700">Previous attempts: </span>
+              <% userQuizScore.attempts.slice(-3).reverse().forEach(attempt => { %>
+                <span class="px-3 py-1 rounded-full text-sm font-medium <%= attempt.passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                  <%= attempt.score %>% 
+                  (<%= new Date(attempt.date).toLocaleDateString() %>)
+                </span>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Quiz instructions section -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-info-circle text-blue-600 mr-2"></i> Quiz Instructions
+          </h3>
+          <ul class="list-disc list-inside text-gray-700 space-y-2">
+            <li>This quiz contains <%= quiz.questions.length %> questions</li>
+            <li>To pass this quiz, you must score at least <%= quiz.passMark %>% correct</li>
+            <li>You have <%= attemptsRemaining %> attempts remaining in the next 24 hours</li>
+            <li>Select the best answer for each question</li>
+            <li>You can review your answers before submitting</li>
+          </ul>
+        </div>
+
+        <!-- Already completed quiz message -->
+        <% if (quizAlreadyCompleted) { %>
+          <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center text-green-800">
+              <i class="fas fa-trophy mr-2"></i>
+              <span>You have already passed this quiz with a score of <%= userQuizScore.score %>%.</span>
+              <span class="ml-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">Passed</span>
+            </div>
+            <p class="text-green-700 text-sm mt-2">You can retake this quiz to improve your score, but it won't affect your completion status.</p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Quiz questions form -->
+      <form id="quizForm" action="/courses/submit-quiz/<%= quiz._id %>" method="POST" class="space-y-6">
+        <input type="hidden" name="courseId" value="<%= course._id %>">
+        
+        <% quiz.questions.forEach((question, questionIndex) => { %>
+          <div class="bg-white rounded-lg shadow-sm p-6" id="question-<%= questionIndex + 1 %>">
+            <!-- Question header with number and points -->
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-medium text-gray-900">Question <%= questionIndex + 1 %> of <%= quiz.questions.length %></h3>
+              <div class="text-gray-600"><%= question.points || 1 %> <%= (question.points || 1) === 1 ? 'point' : 'points' %></div>
+            </div>
+            
+            <div class="space-y-4">
+              <!-- Question text -->
+              <p class="text-gray-700 text-lg"><%= question.question %></p>
+              
+              <!-- Answer options -->
+              <div class="space-y-3">
+                <% question.options.forEach((option, optionIndex) => { %>
+                  <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-500 transition-colors">
+                    <input 
+                      type="radio" 
+                      id="q<%= question._id %>-opt<%= optionIndex %>" 
+                      name="answers[<%= question._id %>]" 
+                      value="<%= option %>"
+                      class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      required
+                    >
+                    <label for="q<%= question._id %>-opt<%= optionIndex %>" class="ml-3 text-gray-700 cursor-pointer flex-1">
+                      <%= option %>
+                    </label>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+        
+        <!-- Submit button -->
+        <div class="flex justify-center mt-8">
+          <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+            <i class="fas fa-paper-plane mr-2"></i> Submit Quiz
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Handle form submission
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Check if all questions are answered
+      const questions = document.querySelectorAll('[name^="answers["]');
+      const answeredQuestions = new Set();
+      
+      questions.forEach(input => {
+        if (input.checked) {
+          const questionId = input.name.match(/\[(.*?)\]/)[1];
+          answeredQuestions.add(questionId);
+        }
+      });
+      
+      if (answeredQuestions.size !== <%= quiz.questions.length %>) {
+        alert('Please answer all questions before submitting.');
+        return;
+      }
+      
+      // If all questions are answered, submit the form
+      this.submit();
+    });
+  </script>
+</body>
+</html>

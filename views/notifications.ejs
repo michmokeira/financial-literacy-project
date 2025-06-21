@@ -1,0 +1,170 @@
+<!-- views/notifications.ejs -->
+<div class="container mx-auto px-4 py-8 mt-16">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Notifications</h1>
+            <div class="flex space-x-4">
+                <button id="markAllRead" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-check-double mr-2"></i>Mark all as read
+                </button>
+                <button id="clearAll" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                    <i class="fas fa-trash mr-2"></i>Clear all
+                </button>
+            </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="bg-white rounded-lg shadow">
+            <% if (notifications && notifications.length > 0) { %>
+                <div class="divide-y divide-gray-200">
+                    <% notifications.forEach(notification => { %>
+                        <div class="notification-item p-6 hover:bg-gray-50 transition-colors duration-200 <%= !notification.isRead ? 'bg-blue-50' : '' %>"
+                             data-id="<%= notification._id %>">
+                            <div class="flex items-start space-x-4">
+                                <!-- Sender Avatar -->
+                                <div class="flex-shrink-0">
+                                    <img src="<%= notification.sender.profileImage || '/images/default-avatar.png' %>"
+                                         alt="<%= notification.sender.username %>"
+                                         class="h-12 w-12 rounded-full border border-gray-200">
+                                </div>
+                                
+                                <!-- Notification Content -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-sm font-medium text-gray-900">
+                                            <%= notification.sender.username %>
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            <%= new Date(notification.createdAt).toLocaleString() %>
+                                        </p>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-700">
+                                        <%= notification.content %>
+                                    </p>
+                                    <% if (notification.referenceType && notification.reference) { %>
+                                        <a href="<%= notification.referenceType === 'Blog' ? `/blog/${notification.reference}` : 
+                                                 notification.referenceType === 'ForumPost' ? `/forum/post/${notification.reference}` : 
+                                                 notification.referenceType === 'Badge' ? '/profile?tab=badges' : '#' %>"
+                                           class="mt-2 inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-external-link-alt mr-1"></i>
+                                            View <%= notification.referenceType.toLowerCase() %>
+                                        </a>
+                                    <% } %>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex-shrink-0 flex items-center space-x-3">
+                                    <% if (!notification.isRead) { %>
+                                        <button class="mark-read-btn px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors text-sm">
+                                            <i class="fas fa-check mr-1"></i>Mark as read
+                                        </button>
+                                    <% } %>
+                                    <button class="delete-btn px-3 py-1.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm">
+                                        <i class="fas fa-trash mr-1"></i>Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="p-12 text-center">
+                    <div class="text-gray-400 mb-4">
+                        <i class="fas fa-bell text-6xl"></i>
+                    </div>
+                    <p class="text-gray-500 text-lg">No notifications yet</p>
+                    <p class="text-gray-400 mt-2">When you receive notifications, they will appear here.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mark all as read
+    document.getElementById('markAllRead').addEventListener('click', async function() {
+        try {
+            const response = await fetch('/notifications/read-all', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error marking all as read:', error);
+        }
+    });
+
+    // Clear all notifications
+    document.getElementById('clearAll').addEventListener('click', async function() {
+        if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+            try {
+                const response = await fetch('/notifications/clear-all', {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Error clearing notifications:', error);
+            }
+        }
+    });
+
+    // Mark individual notification as read
+    document.querySelectorAll('.mark-read-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const notificationItem = this.closest('.notification-item');
+            const notificationId = notificationItem.dataset.id;
+            
+            try {
+                const response = await fetch(`/notifications/${notificationId}/read`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    notificationItem.classList.remove('bg-blue-50');
+                    this.remove();
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        });
+    });
+
+    // Delete individual notification
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const notificationItem = this.closest('.notification-item');
+            const notificationId = notificationItem.dataset.id;
+            
+            try {
+                const response = await fetch(`/notifications/${notificationId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    notificationItem.remove();
+                    
+                    // If no notifications left, show empty state
+                    if (document.querySelectorAll('.notification-item').length === 0) {
+                        window.location.reload();
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting notification:', error);
+            }
+        });
+    });
+});
+</script> 

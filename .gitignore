@@ -18,4 +18,6 @@ npm-debug.log*
 yarn-debug.log*
 
 # Misc
-.DS_Store 
+.DS_Store node_modules/ 
+.env 
+tempCodeRunnerFile.js 

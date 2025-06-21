@@ -40,4 +40,44 @@ const authorizeAdmin = async (req, res, next) => {
     next();
 };
 
-module.exports = { authenticate, authorizeAdmin, ensureAuthenticated };// Export the middleware functions for use in other files
+// Middleware to check if the user is an expert
+const isExpert = (req, res, next) => {
+    if (req.session.user && req.session.user.role === 'expert') {
+        return next();
+    }
+    req.flash('error', 'You do not have permission to access this page.');
+    res.redirect('/dashboard');
+};
+
+// Middleware to check if user is authenticated (can be used for API-like checks)
+const isAuthenticated = (req, res, next) => {
+  if (req.session && req.session.user) {
+    return next();
+  } else {
+    // For AJAX requests, return a JSON error
+    if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    // For regular requests, redirect
+    req.flash('error', 'Please log in to continue.');
+    res.redirect('/login');
+  }
+};
+
+// Middleware to check if the user is an admin
+const ensureAdmin = (req, res, next) => {
+    if (req.session.user && req.session.user.role === 'admin') {
+        return next();
+    }
+    req.flash('error', 'You must be an admin to access this page.');
+    res.redirect('/dashboard');
+};
+
+module.exports = { 
+    authenticate, 
+    authorizeAdmin, 
+    ensureAuthenticated,
+    isExpert,
+    isAuthenticated,
+    ensureAdmin
+};

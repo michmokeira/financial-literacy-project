@@ -4,7 +4,7 @@ const Notification = require('../models/notification');
 const User = require('../models/user');
 
 // Get all published blogs with pagination, search, and sorting
-exports.getAllBlogs = async (req, res) => {
+const getAllBlogs = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -73,7 +73,7 @@ exports.getAllBlogs = async (req, res) => {
 };
 
 // Get single blog post
-exports.getBlogPost = async (req, res) => {
+const getBlogPost = async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id)
       .populate('author', 'username profileImage')
@@ -156,7 +156,7 @@ exports.getBlogPost = async (req, res) => {
 };
 
 // Create new blog (experts only)
-exports.createBlog = async (req, res) => {
+const createBlog = async (req, res) => {
   try {
     const { title, content, tags, category, status = 'published' } = req.body;
     const userId = req.session.user._id;
@@ -188,7 +188,7 @@ exports.createBlog = async (req, res) => {
 };
 
 // Like a blog post
-exports.likeBlog = async (req, res) => {
+const likeBlog = async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id)
       .populate('author', 'username');
@@ -225,7 +225,7 @@ exports.likeBlog = async (req, res) => {
 };
 
 // Comment on a blog post
-exports.commentOnBlog = async (req, res) => {
+const commentOnBlog = async (req, res) => {
   try {
     const { content } = req.body;
     const blogId = req.params.id;
@@ -275,7 +275,7 @@ exports.commentOnBlog = async (req, res) => {
 };
 
 // Reply to a comment
-exports.replyToComment = async (req, res) => {
+const replyToComment = async (req, res) => {
   try {
     const { content } = req.body;
     const { id: blogId, commentId } = req.params;
@@ -331,7 +331,7 @@ exports.replyToComment = async (req, res) => {
 };
 
 // Edit a comment
-exports.editComment = async (req, res) => {
+const editComment = async (req, res) => {
   try {
     const { content } = req.body;
     const { id: blogId, commentId } = req.params;
@@ -375,7 +375,7 @@ exports.editComment = async (req, res) => {
 };
 
 // Edit a reply
-exports.editReply = async (req, res) => {
+const editReply = async (req, res) => {
   try {
     const { content } = req.body;
     const { id: blogId, commentId, replyId } = req.params;
@@ -425,7 +425,7 @@ exports.editReply = async (req, res) => {
 };
 
 // Delete a comment
-exports.deleteComment = async (req, res) => {
+const deleteComment = async (req, res) => {
   try {
     const { id: blogId, commentId } = req.params;
     const userId = req.session.user._id;
@@ -462,7 +462,7 @@ exports.deleteComment = async (req, res) => {
 };
 
 // Delete a reply
-exports.deleteReply = async (req, res) => {
+const deleteReply = async (req, res) => {
   try {
     const { id: blogId, commentId, replyId } = req.params;
     const userId = req.session.user._id;
@@ -505,7 +505,7 @@ exports.deleteReply = async (req, res) => {
 };
 
 // Flag a blog post
-exports.flagBlog = async (req, res) => {
+const flagBlog = async (req, res) => {
   try {
     const blogId = req.params.id;
     const userId = req.session.user._id;
@@ -555,7 +555,7 @@ exports.flagBlog = async (req, res) => {
 };
 
 // Get expert's draft posts
-exports.getDrafts = async (req, res) => {
+const getDrafts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -582,7 +582,7 @@ exports.getDrafts = async (req, res) => {
 };
 
 // Get blog edit form
-exports.getBlogEdit = async (req, res) => {
+const getBlogEdit = async (req, res) => {
   try {
     const blog = await Blog.findOne({
       _id: req.params.id,
@@ -610,7 +610,7 @@ exports.getBlogEdit = async (req, res) => {
 };
 
 // Update blog
-exports.updateBlog = async (req, res) => {
+const updateBlog = async (req, res) => {
   try {
     const { title, content, category, status } = req.body;
     const blog = await Blog.findOne({
@@ -656,4 +656,21 @@ exports.updateBlog = async (req, res) => {
     req.flash('error', 'Error updating blog post');
     res.redirect(`/blog/expert/edit/${req.params.id}`);
   }
+};
+
+module.exports = {
+  getAllBlogs,
+  getBlogPost,
+  createBlog,
+  likeBlog,
+  commentOnBlog,
+  replyToComment,
+  editComment,
+  editReply,
+  deleteComment,
+  deleteReply,
+  flagBlog,
+  getDrafts,
+  getBlogEdit,
+  updateBlog
 };

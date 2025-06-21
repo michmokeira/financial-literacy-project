@@ -68,7 +68,7 @@ const courseRoutes = require('./routes/courseRoutes'); //Import course routes
 const profileRoutes = require('./routes/profileRoutes');// Import profile routes
 const forumRoutes = require('./routes/forumRoutes');// Import forum routes
 const notificationRoutes = require('./routes/notificationRoutes');// Import notification routes
-const adminRoutes = require('./routes/adminRoutes');// Import admin routes
+// const adminRoutes = require('./routes/adminRoutes');// Import admin routes
 const blogRoutes = require('./routes/blogRoutes');// Import blog routes
 
 
@@ -80,7 +80,7 @@ app.use('/courses', courseRoutes);//Use course routes for the "/courses" path
 app.use('/profile', profileRoutes);// Use profile routes for the "/profile" path
 app.use('/forum', forumRoutes);// Use forum routes for the "/forum" path
 app.use('/notifications', notificationRoutes);// Use notification routes for the "/notifications" path
-app.use('/admin', adminRoutes);// Use admin routes for the "/admin" path
+// app.use('/admin', adminRoutes);// Use admin routes for the "/admin" path
 app.use('/blog', blogRoutes);// Use blog routes for the "/blog" path
 
 

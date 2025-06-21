@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+  <!-- Include the sidebar partial -->
+  <%- include('../partials/sidebar', { activePage: 'forum' }) %>
+  <!--header partial-->
+  <%- include('../partials/header', { user: user }) %>
+
+  <!-- Main Content Area -->
+  <main class="pt-16 md:ml-64 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Flash Messages -->
+      <% if (locals.messages && locals.messages.success) { %>
+        <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md flex items-center">
+          <i class="fas fa-check-circle mr-2"></i>
+          <%= locals.messages.success %>
+        </div>
+      <% } %>
+      
+      <% if (locals.messages && locals.messages.error) { %>
+        <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md flex items-center">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          <%= locals.messages.error %>
+        </div>
+      <% } %>
+
+      <!-- Forum Header -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg p-6 text-white mb-6">
+        <h2 class="text-2xl font-bold">Community Forum</h2>
+        <p class="mt-1 opacity-90">
+          Join the discussion about financial literacy, ask questions, and share your insights.
+        </p>
+        <!--Create post only allowed if user is logged in-->
+        <% if (user) { %>
+          <div class="mt-4">
+            <a href="/forum/create" 
+               class="inline-block bg-white text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-gray-200 transition-colors">
+              Create Post
+            </a>
+          </div>
+        <% } else { %>
+          <div class="mt-4">
+            <a href="/login" 
+               class="inline-block bg-white text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-gray-200 transition-colors">
+              Login to Post
+            </a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Forum Content -->
+      <%- include('../partials/forum-content', {
+        view: 'list',
+        posts: posts,
+        user: user,
+        filters: {
+          category: filters.category,
+          search: filters.search,
+          sort: filters.sort
+        },
+        pagination: {
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages
+        }
+      }) %>
+    </div>
+  </main>
+
+  <script>
+    function applyFilters() {
+      const category = document.getElementById('category-filter').value;
+      const search = document.getElementById('search-input').value;
+      const sort = document.getElementById('sort-by').value;
+      
+      const params = new URLSearchParams();
+      if (category) params.append('category', category);
+      if (search) params.append('search', search);
+      if (sort) params.append('sort', sort);
+      
+      window.location.search = params.toString();
+    }
+  </script>
+</body>
+</html>

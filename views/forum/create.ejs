@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Forum Post | Financial Literacy Platform</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Include Quill.js for rich text editing -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+  <!-- Include the sidebar partial -->
+  <%- include('../partials/sidebar', { activePage: 'forum' }) %>
+  <!--Include the header partial-->
+  <%- include('../partials/header') %>
+
+  <main class="pt-16 md:ml-64 min-h-screen transition-all duration-300 md:ml-64">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Page Header -->
+      <div class="flex items-center justify-between mb-6 text-white px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg">
+        <div>
+          <h1 class="text-2xl font-bold">Create Forum Post</h1>
+          <p class="mt-1 text-sm">Share your thoughts with the community</p>
+        </div>
+        <a href="/forum" class="inline-flex items-center justify-center px-4 py-2 text-sm bg-gray-100 rounded-md hover:bg-gray-200 transition-colors outline outline-white">
+          <i class="fas fa-arrow-left mr-1.5"></i> Back to Forum
+        </a>
+      </div>
+
+      <!-- Flash messages -->
+      <% if (locals.messages && locals.messages.success) { %>
+        <div class="mx-6 mt-4 p-3 bg-green-100 text-green-700 border border-green-200 rounded-md">
+          <%= locals.messages.success %>
+        </div>
+      <% } %>
+      
+      <% if (locals.messages && locals.messages.error) { %>
+        <div class="mx-6 mt-4 p-3 bg-red-100 text-red-700 border border-red-200 rounded-md">
+          <%= locals.messages.error %>
+        </div>
+      <% } %>
+      
+      <!-- Create Post Form -->
+      <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <form action="/forum/create" method="POST" id="createPostForm">
+          <!-- Form Header -->
+          <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h2 class="font-medium text-gray-900">Post Details</h2>
+          </div>
+          
+          <div class="p-6 space-y-6">
+            <!-- Title Input -->
+            <div>
+              <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title<span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                id="title" 
+                name="title" 
+                required 
+                placeholder="Enter a descriptive title"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+              <p class="mt-1 text-xs text-gray-500">Make your title specific and clear (5-100 characters)</p>
+            </div>
+            
+            <!-- Category Selection -->
+            <div>
+              <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category<span class="text-red-500">*</span></label>
+              <select 
+                id="category" 
+                name="category" 
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="" disabled selected>Select a category</option>
+                <option value="investing">Investing</option>
+                <option value="saving">Saving</option>
+                <option value="budgeting">Budgeting</option>
+                <option value="debt">Debt Management</option>
+                <option value="retirement">Retirement Planning</option>
+                <option value="taxes">Taxes</option>
+                <option value="insurance">Insurance</option>
+                <option value="credit">Credit & Credit Cards</option>
+                <option value="mortgage">Mortgage & Real Estate</option>
+                <option value="cryptocurrency">Cryptocurrency</option>
+                <option value="stocks">Stocks & Trading</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <!-- Rich Text Editor -->
+            <div class="space-y-2">
+              <label for="editor" class="block text-sm font-medium text-gray-700 mb-1">Content <span class="text-red-500">*</span></label>
+              <div id="editor" class="h-64 border border-gray-300 rounded-md"></div>
+              <input type="hidden" name="content" id="content">
+              <p class="mt-1 text-xs text-gray-500">Share your thoughts, questions, or insights with the community</p>
+            </div>
+            
+            <!-- Tags Input -->
+            <div>
+              <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+              <input 
+                type="text" 
+                id="tags" 
+                name="tags" 
+                placeholder="Enter tags separated by commas"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+              <p class="mt-1 text-xs text-gray-500">E.g., investing, stocks, retirement (max 5 tags)</p>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex gap-4 pt-2">
+              <button 
+                type="submit" 
+                class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700">
+                <i class="fas fa-paper-plane mr-2"></i> Create Post
+              </button>
+              <button 
+                type="button" 
+                onclick="window.location.href='/forum'" 
+                class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">
+                <i class="fas fa-times mr-2"></i> Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tips Card -->
+      <div class="bg-blue-50 border border-gray-200 p-4 mt-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-4">Tips for Creating Engaging Posts</h2>
+        <ul class="text-sm text-gray-600 space-y-4">
+          <li class="flex items-start gap-4">
+            <i class="fas fa-check-circle mt-1 mr-2"></i>
+            <span>Use a clear, specific title that summarizes your topic</span>
+          </li>
+          <li class="flex items-start gap-4">
+            <i class="fas fa-check-circle mt-1 mr-2"></i>
+            <span>Break content into paragraphs for better readability</span>
+          </li>
+          <li class="flex items-start gap-4">
+            <i class="fas fa-check-circle mt-1 mr-2"></i>
+            <span>Use formatting (bold, lists) to highlight important points</span>
+          </li>
+          <li class="flex items-start gap-4">
+            <i class="fas fa-check-circle mt-1 mr-2"></i>
+            <span>Include relevant information and avoid unnecessary details</span>
+          </li>
+          <li class="flex items-start gap-4">
+            <i class="fas fa-check-circle mt-1 mr-2"></i>
+            <span>Be respectful and follow community guidelines</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <!-- Include Quill.js for rich text editing -->
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Quill editor
+      const quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Write your post content here...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link'],
+            ['clean']
+          ]
+        }
+      });
+
+      const form = document.querySelector('form');
+      const titleInput = document.getElementById('title');
+      const tagsInput = document.getElementById('tags');
+      
+      if (form) {
+        form.addEventListener('submit', function(event) {
+          // Get content from Quill editor
+          const content = document.getElementById('content');
+          content.value = quill.root.innerHTML;
+          
+          // Validate title length
+          if (titleInput.value.length < 5 || titleInput.value.length > 100) {
+            event.preventDefault();
+            alert('Title must be between 5 and 100 characters.');
+            return;
+          }
+          
+          // Validate content length
+          if (quill.getText().trim().length < 20) {
+            event.preventDefault();
+            alert('Content must be at least 20 characters.');
+            return;
+          }
+          
+          // Validate tags (if provided)
+          if (tagsInput.value) {
+            const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+            if (tags.length > 5) {
+              event.preventDefault();
+              alert('You can add a maximum of 5 tags.');
+              return;
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

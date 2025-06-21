@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Forum Post | Financial Literacy Platform</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+  <!-- Include the sidebar partial -->
+  <%- include('../partials/sidebar', { activePage: 'forum' }) %>
+  <!--Include the header partial-->
+  <%- include('../partials/header') %>
+
+  <main class="ml-64 min-h-screen transition-all duration-300 md:ml-64">
+    <!-- Header -->
+    <header class="flex justify-between items-center p-4 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+      <div class="flex items-center gap-2 text-sm text-gray-600">
+        <a href="/forum" class="hover:text-blue-600 transition-colors">Forum</a>
+        <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+        <a href="/forum/post/<%= post._id %>" class="hover:text-blue-600 transition-colors"><%= post.title %></a>
+        <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+        <span class="text-gray-800 font-medium">Edit</span>
+      </div>
+      <div class="flex items-center gap-5">
+        <div class="relative cursor-pointer">
+          <i class="fas fa-bell text-xl text-gray-600"></i>
+          <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-semibold w-5 h-5 rounded-full flex items-center justify-center">3</span>
+        </div>
+        <div class="w-10 h-10 rounded-full overflow-hidden cursor-pointer">
+          <img src="<%= user?.profileImage || '/images/default-profile.png' %>" alt="<%= user?.username || 'User' %>" class="w-full h-full object-cover" />
+        </div>
+      </div>
+    </header>
+
+    <!-- Flash messages -->
+    <% if (locals.messages && locals.messages.success) { %>
+      <div class="mx-6 mt-4 p-3 bg-green-100 text-green-700 border border-green-200 rounded-md">
+        <%= locals.messages.success %>
+      </div>
+    <% } %>
+    
+    <% if (locals.messages && locals.messages.error) { %>
+      <div class="mx-6 mt-4 p-3 bg-red-100 text-red-700 border border-red-200 rounded-md">
+        <%= locals.messages.error %>
+      </div>
+    <% } %>
+
+    <div class="max-w-4xl mx-auto p-6">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Edit Post</h1>
+        <p class="text-gray-600">
+          Update your post to improve clarity or add new information.
+        </p>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <form action="/forum/post/<%= post._id %>/edit" method="POST" class="space-y-6">
+          <div class="space-y-2">
+            <label for="title" class="block text-sm font-medium text-gray-700">
+              Title <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="title" 
+              name="title" 
+              required 
+              value="<%= post.title %>" 
+              placeholder="Enter a descriptive title"
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+            <p class="text-xs text-gray-500">Make your title specific and clear (5-100 characters)</p>
+          </div>
+          
+          <div class="space-y-2">
+            <label for="category" class="block text-sm font-medium text-gray-700">
+              Category <span class="text-red-500">*</span>
+            </label>
+            <select 
+              id="category" 
+              name="category" 
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+            >
+              <% if (categories && categories.length > 0) { %>
+                <% categories.forEach(category => { %>
+                  <option value="<%= category %>" <%= post.category === category ? 'selected' : '' %>><%= category %></option>
+                <% }) %>
+              <% } else { %>
+                <option value="General" <%= post.category === 'General' ? 'selected' : '' %>>General</option>
+                <option value="Investing" <%= post.category === 'Investing' ? 'selected' : '' %>>Investing</option>
+                <option value="Budgeting" <%= post.category === 'Budgeting' ? 'selected' : '' %>>Budgeting</option>
+                <option value="Saving" <%= post.category === 'Saving' ? 'selected' : '' %>>Saving</option>
+                <option value="Credit" <%= post.category === 'Credit' ? 'selected' : '' %>>Credit</option>
+                <option value="Debt" <%= post.category === 'Debt' ? 'selected' : '' %>>Debt</option>
+                <option value="Retirement" <%= post.category === 'Retirement' ? 'selected' : '' %>>Retirement</option>
+                <option value="Taxes" <%= post.category === 'Taxes' ? 'selected' : '' %>>Taxes</option>
+                <option value="Insurance" <%= post.category === 'Insurance' ? 'selected' : '' %>>Insurance</option>
+                <option value="Other" <%= post.category === 'Other' ? 'selected' : '' %>>Other</option>
+              <% } %>
+            </select>
+          </div>
+          
+          <div class="space-y-2">
+            <label for="content" class="block text-sm font-medium text-gray-700">
+              Content <span class="text-red-500">*</span>
+            </label>
+            <textarea 
+              id="content" 
+              name="content" 
+              rows="10" 
+              required 
+              placeholder="Write your post content here..."
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            ><%= post.content %></textarea>
+            <p class="text-xs text-gray-500">You can use basic HTML formatting</p>
+          </div>
+          
+          <div class="space-y-2">
+            <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+            <input 
+              type="text" 
+              id="tags" 
+              name="tags" 
+              value="<%= tags %>" 
+              placeholder="Enter tags separated by commas"
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+            <p class="text-xs text-gray-500">E.g., investing, stocks, retirement (max 5 tags)</p>
+          </div>
+          
+          <div class="flex gap-4 pt-2">
+            <button 
+              type="submit" 
+              class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <i class="fas fa-save mr-2"></i> Save Changes
+            </button>
+            <a 
+              href="/forum/post/<%= post._id %>" 
+              class="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            >
+              <i class="fas fa-times mr-2"></i> Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+      
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+          <i class="fas fa-history mr-2 text-gray-500"></i> Edit History
+        </h3>
+        <p class="text-sm text-gray-600">
+          <strong>Created:</strong> <%= new Date(post.createdAt).toLocaleString() %><br>
+          <% if (post.isEdited) { %>
+            <strong>Last Edited:</strong> <%= new Date(post.lastEditedAt).toLocaleString() %>
+          <% } else { %>
+            <em>This post has not been edited before.</em>
+          <% } %>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Basic form validation
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
+      const titleInput = document.getElementById('title');
+      const contentInput = document.getElementById('content');
+      const tagsInput = document.getElementById('tags');
+      
+      if (form) {
+        form.addEventListener('submit', function(event) {
+          // Validate title length
+          if (titleInput.value.length < 5 || titleInput.value.length > 100) {
+            event.preventDefault();
+            alert('Title must be between 5 and 100 characters.');
+            return;
+          }
+          
+          // Validate content length
+          if (contentInput.value.length < 20) {
+            event.preventDefault();
+            alert('Content must be at least 20 characters.');
+            return;
+          }
+          
+          // Validate tags (if provided)
+          if (tagsInput.value) {
+            const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+            if (tags.length > 5) {
+              event.preventDefault();
+              alert('You can add a maximum of 5 tags.');
+              return;
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

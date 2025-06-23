@@ -1,4 +1,4 @@
-# FinLit Platform
+# Finova Financial Literacy Platform
 
 A comprehensive financial literacy learning platform developed as my Computer Science final degree project.
 

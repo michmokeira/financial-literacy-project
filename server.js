@@ -87,7 +87,7 @@ app.use('/blog', blogRoutes);// Use blog routes for the "/blog" path
 
 //default route
 app.get("/", (req, res) => {
-  res.send("Welcome to the Financial Literacy Platform!");
+  res.send("Welcome to the Finova Financial Literacy Platform!");
 });
 
 // 404 Error Handling (For undefined routes)

@@ -4,14 +4,28 @@ const User = require('../models/user');
 const Course = require('../models/course');
 const Module = require('../models/module');
 const Subtopic = require('../models/subtopic');
-const Quiz = require('../models/quiz'); 
+const Quiz = require('../models/quiz');
+const Notification = require('../models/notification');
 
 
 // Display all courses
 router.get('/', async (req, res) => {
   try {
+    const user = await User.findById(req.session.user._id).populate('enrolledCourses.course');
     const courses = await Course.find();
-    res.render('course', { courses });
+    // Map enrolledCourses to include progress and flatten course details
+    const enrolledCourses = (user.enrolledCourses || []).map(ec => {
+      const courseObj = ec.course.toObject ? ec.course.toObject() : ec.course;
+      return {
+        ...courseObj,
+        progress: ec.progress || 0,
+        _id: ec.course._id
+      };
+    });
+    // Fetch notifications for the user
+    const notifications = await Notification.find({ user: user._id }).sort({ createdAt: -1 }).limit(10);
+    const unreadCount = await Notification.countDocuments({ user: user._id, read: false });
+    res.render('course', { user, enrolledCourses, courses, notifications, unreadCount });
   } catch (error) {
     console.error('Error fetching courses:', error);
     req.flash('error', 'An error occurred. Please try again later.');
